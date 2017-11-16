@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <Magick++.h>
+//#include <Magick++.h>
 
 using namespace std;
 using namespace cv;
@@ -11,14 +11,14 @@ int main(int, char** argv)
 {
     // Load the image
    // InitializeMagick(*argv);
-    Magick::Image images;
+  //  Magick::Image images;
 //    im.read(argv[1]);
 //    im.write("out.jpg");
-Magick::ReadOptions options;
-options.density(Magick::Geometry(300, 300));
-Magick::readImages(&images, argv[1], options);
+//Magick::ReadOptions options;
+//options.density(Magick::Geometry(300, 300));
+//Magick::readImages(&images, argv[1], options);
 
-images.write("out.png");
+//images.write("out.png");
 
 
     Mat src = imread(argv[1]);
@@ -101,7 +101,7 @@ images.write("out.png");
     Mat mark = Mat::zeros(markers.size(), CV_8UC1);
     markers.convertTo(mark, CV_8UC1);
     bitwise_not(mark, mark);
-//    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
                                   // image looks like at that point
     // Generate random colors
     vector<Vec3b> colors;
@@ -115,17 +115,33 @@ images.write("out.png");
     // Create the result image
     Mat dst = Mat::zeros(markers.size(), CV_8UC3);
     // Fill labeled objects with random colors
+std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
+//std::cout << colors.size();
+    Mat squares = Mat::zeros(colors.size(), 1, CV_32S);
+    int ttt = 0;
     for (int i = 0; i < markers.rows; i++)
     {
         for (int j = 0; j < markers.cols; j++)
         {
             int index = markers.at<int>(i,j);
-            if (index > 0 && index <= static_cast<int>(contours.size()))
+            if (index > 0 && index <= static_cast<int>(contours.size())) {
                 dst.at<Vec3b>(i,j) = colors[index-1];
-            else
+		squares.at<int>(index-1) += 1;
+                ttt +=1;
+	    }
+            else {
                 dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
+		//squares.at<int>(0) += 1;	
+		ttt +=1;
+	    }
         }
     }
+    std::cout << "ttt = " << ttt << std::endl; 
+    int tm=0;
+    for (int i = 0; i < colors.size() ; i++) 
+	tm += squares.at<int>(i);
+    
+    std::cout << "squares = " << tm << std::endl;
     // Visualize the final image
     imshow("Final Result", dst);
     waitKey(0);
