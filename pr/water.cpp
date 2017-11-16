@@ -1,5 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 //#include <Magick++.h>
 
 using namespace std;
@@ -117,7 +120,9 @@ int main(int, char** argv)
     // Fill labeled objects with random colors
 std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
 //std::cout << colors.size();
-    Mat squares = Mat::zeros(colors.size(), 1, CV_32S);
+    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
+    std::cout << "squares = " << squares << std::endl;
+
     int ttt = 0;
     for (int i = 0; i < markers.rows; i++)
     {
@@ -126,7 +131,7 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
             int index = markers.at<int>(i,j);
             if (index > 0 && index <= static_cast<int>(contours.size())) {
                 dst.at<Vec3b>(i,j) = colors[index-1];
-		squares.at<int>(index-1) += 1;
+		squares.at<double>(index-1) += 1.0;
                 ttt +=1;
 	    }
             else {
@@ -140,8 +145,10 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     int tm=0;
     for (int i = 0; i < colors.size() ; i++) 
 	tm += squares.at<int>(i);
-    
-    std::cout << "squares = " << tm << std::endl;
+    std::cout << "squares = " << squares << std::endl;
+    // radius
+    cv::sqrt(squares * M_1_PI, squares);
+    std::cout << "squares = " << squares << std::endl;
     // Visualize the final image
     imshow("Final Result", dst);
     waitKey(0);
