@@ -20,19 +20,22 @@ int findSq(Mat markers, int bgcolor) {
   return count;
 }
 
-Point analogCircle(vector<Point> contour, double r) {
-  vector<Moments> mu(1 );
-  //for( int i = 0; i < markers.size(); i++ )
-//     {
-// mu[i] = moments( markers[i], false ); 
-//}
-mu[0] = moments( contour, false );
-  vector<Point2f> mc( 1 );
-  //for( int i = 0; i < contour.size(); i++ )
-     { mc[0] = Point2f( mu[0].m10/mu[0].m00 , mu[0].m01/mu[0].m00 ); }
-std::cout << "mc[i] = " << mc[0] << std::endl;
-return mc[0];
+Point findContCenter(vector<Point> contour) {
+  Moments mu;
+  mu = moments( contour, false );
+  Point2f mc;
+  mc = Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
+//  std::cout << "contour: " << contour << std::endl;
+  return mc;
 }
+
+void compareWithCircle(vector<Point> contour, double r, int imgRows, int imgCols) {
+  Mat circleImg = Mat::zeros(imgRows, imgCols, CV_32SC1);
+  Point center = findContCenter(contour);
+  circle(circleImg, center, (int)r, CV_RGB(255,255,255));  
+  imshow("Circles", circleImg);
+}
+
 
 int main(int, char** argv)
 {
@@ -125,9 +128,9 @@ int main(int, char** argv)
   	 markers = Mat::zeros(dist.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
-std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
+        std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
-        Point tmp = analogCircle(contours[i], r);
+        Point tmp = findContCenter(contours[i]);
        std::cout << "Point = " << tmp << std::endl;
     }
     // Draw the background marker
