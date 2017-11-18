@@ -3,25 +3,13 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-//#include <Magick++.h>
 
 using namespace std;
 using namespace cv;
-//using namespace Magick;
 
 
 int main(int, char** argv)
 {
-    // Load the image
-   // InitializeMagick(*argv);
-  //  Magick::Image images;
-//    im.read(argv[1]);
-//    im.write("out.jpg");
-//Magick::ReadOptions options;
-//options.density(Magick::Geometry(300, 300));
-//Magick::readImages(&images, argv[1], options);
-
-//images.write("out.png");
 
 
     Mat src = imread(argv[1]);
@@ -90,7 +78,8 @@ int main(int, char** argv)
     dist.convertTo(dist_8u, CV_8U);
     // Find total markers
     vector<vector<Point> > contours;
-    findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    vector< Vec4i > hierarchy;
+    findContours(dist_8u, contours, hierarchy,  CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     // Create the marker image for the watershed algorithm
     Mat markers = Mat::zeros(dist.size(), CV_32SC1);
     // Draw the foreground markers
@@ -151,6 +140,29 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     std::cout << "squares = " << squares << std::endl;
     // Visualize the final image
     imshow("Final Result", dst);
+
+    Mat tmp,thr;
+//    src=imread("../circ.png", 1);
+src = dst;
+    cvtColor(src,tmp,CV_BGR2GRAY);
+    threshold(tmp,thr,127, 0, THRESH_BINARY_INV);
+
+ //   vector< vector <Point> > contours2; // Vector for storing contour
+ //   vector< Vec4i > hierarchy;
+ //   findContours( thr, contours2, hierarchy,CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE );
+
+    for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) // iterate through each contour.
+    {
+        Rect r= boundingRect(contours[i]);
+
+std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
+        if(hierarchy[i][2]<0) //Check if there is a child contour
+          rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,0,255),2,8,0); //Opened contour
+        else
+          rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,255,0),2,8,0); //closed contour
+    }
+
+    imshow("Final final Result", src);
     waitKey(0);
     return 0;
 }
