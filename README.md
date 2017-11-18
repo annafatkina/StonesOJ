@@ -7,7 +7,8 @@ In example use this manual: https://github.com/FloopCZ/tensorflow_cc
 
 3) Download [Tensorflow model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_FCRN-checkpoint.zip), unzip it and copy to ${PROJECT_SOURCE_DIR}/build/
 
-4) ```
+4) 
+```
 cd build
 cmake ..
 make
