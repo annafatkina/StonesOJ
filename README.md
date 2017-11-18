@@ -1,2 +1,1 @@
-# StonesOJ
-Project with 3D stones 
+Nothing interesting here 
