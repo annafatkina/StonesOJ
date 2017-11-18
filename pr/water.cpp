@@ -4,7 +4,7 @@
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <cmath>
-
+#include <string>
 
 using namespace std;
 using namespace cv;
@@ -29,11 +29,11 @@ Point findContCenter(vector<Point> contour) {
   return mc;
 }
 
-void compareWithCircle(vector<Point> contour, double r, int imgRows, int imgCols) {
-  Mat circleImg = Mat::zeros(imgRows, imgCols, CV_32SC1);
+void compareWithCircle(Mat circleImg, vector<Point> contour, double r, int imgRows, int imgCols) {
   Point center = findContCenter(contour);
-  circle(circleImg, center, (int)r, CV_RGB(255,255,255));  
-  imshow("Circles", circleImg);
+  std::cout << "cent = " << center << std::endl; 
+  circle(circleImg, center, (int)r, CV_RGB(128,128,128), -1);  
+//std::cout << "mat = " << std::endl << circleImg ;
 }
 
 
@@ -119,19 +119,22 @@ int main(int, char** argv)
     vector< Vec4i > hierarchy;
     findContours(dist_8u, contours, hierarchy,  CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     // Create the marker image for the watershed algorithm
-    Mat markers_tmp = Mat::zeros(dist.size(), CV_32SC1);
+    Mat markers_tmp;
     Mat markers = Mat::zeros(dist.size(), CV_32SC1);
     // Draw the foreground markers
     Mat squares = Mat::zeros(contours.size(), 1, CV_64F); // for squares in points
-
     for (size_t i = 0; i < contours.size(); i++) {
   	 markers = Mat::zeros(dist.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
         std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
-        Point tmp = findContCenter(contours[i]);
-       std::cout << "Point = " << tmp << std::endl;
+ //       Point tmp = findContCenter(contours[i]);
+        markers_tmp = markers.clone();
+       compareWithCircle(markers_tmp, contours[i], r, src.rows, src.cols); 
+imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
+
+//       std::cout << "Point = " << tmp << std::endl;
     }
     // Draw the background marker
 //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
