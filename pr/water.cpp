@@ -1,4 +1,6 @@
 #include <opencv2/opencv.hpp>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -18,7 +20,19 @@ int findSq(Mat markers, int bgcolor) {
   return count;
 }
 
-
+Point analogCircle(vector<Point> contour, double r) {
+  vector<Moments> mu(1 );
+  //for( int i = 0; i < markers.size(); i++ )
+//     {
+// mu[i] = moments( markers[i], false ); 
+//}
+mu[0] = moments( contour, false );
+  vector<Point2f> mc( 1 );
+  //for( int i = 0; i < contour.size(); i++ )
+     { mc[0] = Point2f( mu[0].m10/mu[0].m00 , mu[0].m01/mu[0].m00 ); }
+std::cout << "mc[i] = " << mc[0] << std::endl;
+return mc[0];
+}
 
 int main(int, char** argv)
 {
@@ -112,7 +126,9 @@ int main(int, char** argv)
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
 std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
-//        std::cout << "markes" << markers << std::endl;
+        double r = sqrt(squares.at<double>(i)  * M_1_PI);
+        Point tmp = analogCircle(contours[i], r);
+       std::cout << "Point = " << tmp << std::endl;
     }
     // Draw the background marker
 //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
@@ -169,7 +185,7 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     std::cout << "squares = " << squares << std::endl;
 */    // Visualize the final image
     imshow("Final Result", dst);
-/*
+
   //  Mat tmp,thr;
 //    src=imread("../circ.png", 1);
     src = dst;
@@ -192,6 +208,6 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     }
 
     imshow("Final final Result", src);
- */   waitKey(0);
+/* */   waitKey(0);
     return 0;
 }
