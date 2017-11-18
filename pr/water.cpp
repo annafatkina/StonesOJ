@@ -8,6 +8,18 @@ using namespace std;
 using namespace cv;
 
 
+int findSq(Mat markers, int bgcolor) {
+  int count = 0;
+  for( int i = 0; i  < markers.rows; i++) {
+    for (int j = 0; j < markers.cols; j++) {
+      if (markers.at<int>(i, j) != bgcolor) count++;
+    }
+  }
+  return count;
+}
+
+
+
 int main(int, char** argv)
 {
 
@@ -27,6 +39,12 @@ int main(int, char** argv)
             src.at<Vec3b>(x, y)[1] = 0;
             src.at<Vec3b>(x, y)[2] = 0;
           }
+	  else 
+	  {
+            src.at<Vec3b>(x, y)[0] = 255;
+            src.at<Vec3b>(x, y)[1] = 255;
+            src.at<Vec3b>(x, y)[2] = 255;
+	  }  
         }
     }
     // Show output image
@@ -49,6 +67,7 @@ int main(int, char** argv)
     Mat imgResult = sharp - imgLaplacian;
     // convert back to 8bits gray scale
     imgResult.convertTo(imgResult, CV_8UC3);
+
     imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
     // imshow( "Laplace Filtered Image", imgLaplacian );
     imshow( "New Sharped Image", imgResult );
@@ -59,7 +78,7 @@ int main(int, char** argv)
     threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
     imshow("Binary Image", bw);
     // Perform the distance transform algorithm
-    Mat dist;
+    Mat dist = bw;
     distanceTransform(bw, dist, CV_DIST_L2, 3);
     // Normalize the distance image for range = {0.0, 1.0}
     // so we can visualize and threshold it
@@ -67,10 +86,12 @@ int main(int, char** argv)
     imshow("Distance Transform Image", dist);
     // Threshold to obtain the peaks
     // This will be the markers for the foreground objects
+
+    //Mat dist = src;
     threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
     // Dilate a bit the dist image
-    Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
-    dilate(dist, dist, kernel1);
+   Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
+   dilate(dist, dist, kernel1);
     imshow("Peaks", dist);
     // Create the CV_8U version of the distance image
     // It is needed for findContours()
@@ -81,12 +102,20 @@ int main(int, char** argv)
     vector< Vec4i > hierarchy;
     findContours(dist_8u, contours, hierarchy,  CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     // Create the marker image for the watershed algorithm
+    Mat markers_tmp = Mat::zeros(dist.size(), CV_32SC1);
     Mat markers = Mat::zeros(dist.size(), CV_32SC1);
     // Draw the foreground markers
-    for (size_t i = 0; i < contours.size(); i++)
+    Mat squares = Mat::zeros(contours.size(), 1, CV_64F); // for squares in points
+
+    for (size_t i = 0; i < contours.size(); i++) {
+  	 markers = Mat::zeros(dist.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
+        squares.at<double>(i) = (double)findSq(markers, 0);
+std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
+//        std::cout << "markes" << markers << std::endl;
+    }
     // Draw the background marker
-    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
+//    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
     imshow("Markers", markers*10000);
     // Perform the watershed algorithm
     watershed(src, markers);
@@ -109,8 +138,8 @@ int main(int, char** argv)
     // Fill labeled objects with random colors
 std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
 //std::cout << colors.size();
-    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
-    std::cout << "squares = " << squares << std::endl;
+//    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
+//  std::cout << "squares = " << squares << std::endl;
 
     int ttt = 0;
     for (int i = 0; i < markers.rows; i++)
@@ -120,7 +149,7 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
             int index = markers.at<int>(i,j);
             if (index > 0 && index <= static_cast<int>(contours.size())) {
                 dst.at<Vec3b>(i,j) = colors[index-1];
-		squares.at<double>(index-1) += 1.0;
+//squares.at<double>(index-1) += 1.0;
                 ttt +=1;
 	    }
             else {
@@ -132,20 +161,20 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     }
     std::cout << "ttt = " << ttt << std::endl; 
     int tm=0;
-    for (int i = 0; i < colors.size() ; i++) 
+/*    for (int i = 0; i < colors.size() ; i++) 
 	tm += squares.at<int>(i);
     std::cout << "squares = " << squares << std::endl;
     // radius
     cv::sqrt(squares * M_1_PI, squares);
     std::cout << "squares = " << squares << std::endl;
-    // Visualize the final image
+*/    // Visualize the final image
     imshow("Final Result", dst);
-
-    Mat tmp,thr;
+/*
+  //  Mat tmp,thr;
 //    src=imread("../circ.png", 1);
-src = dst;
-    cvtColor(src,tmp,CV_BGR2GRAY);
-    threshold(tmp,thr,127, 0, THRESH_BINARY_INV);
+    src = dst;
+//    cvtColor(src,tmp,CV_BGR2GRAY);
+//    threshold(tmp,thr,127, 0, THRESH_BINARY_INV);
 
  //   vector< vector <Point> > contours2; // Vector for storing contour
  //   vector< Vec4i > hierarchy;
@@ -154,8 +183,8 @@ src = dst;
     for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) // iterate through each contour.
     {
         Rect r= boundingRect(contours[i]);
-
-std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
+//std::cout << contours[i] << std::endl;
+	std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
         if(hierarchy[i][2]<0) //Check if there is a child contour
           rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,0,255),2,8,0); //Opened contour
         else
@@ -163,6 +192,6 @@ std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " <<
     }
 
     imshow("Final final Result", src);
-    waitKey(0);
+ */   waitKey(0);
     return 0;
 }
