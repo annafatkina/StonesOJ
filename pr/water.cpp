@@ -29,12 +29,26 @@ Point findContCenter(vector<Point> contour) {
   return mc;
 }
 
-void compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
+template <typename T>
+struct PolarPoint {
+  PolarPoint() {};
+  PolarPoint(T inR, T inRcos, T inRsin) {
+    r = inR; rcos = inRcos; rsin = inRsin;
+  }
+  T r; //radius
+  T rcos, rsin;
+  void printCoord() {
+    std::cout << "r = " << r << ", rcos = " << rcos << ", rsin = " << rsin << std::endl;
+
+  }
+};
+
+vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
   Point center = findContCenter(contour);
   std::cout << "cent = " << center << std::endl; 
   Mat tmp = Mat::zeros(circleImg.size(), CV_32SC1);
   circle(tmp, center, (int)r, CV_RGB(128,128,128)); 
-  vector<Point> circPoints = {};
+/*  vector<Point> circPoints = {};
   for (int i = 0; i < circleImg.rows; i++) {
     for (int j = 0; j < circleImg.cols; j++) {
       if (tmp.at<int>(i, j) == 128) {
@@ -42,18 +56,32 @@ void compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
       }
     }
   }
-  
-  vector<double> difs = {};
+*/  
+  vector<PolarPoint<double>> difs = {};
   double dif_tmp = 0.0;
+  PolarPoint<double> pnt;
   for (int i = 0 ; i < contour.size(); i++) {
     dif_tmp = sqrt((contour[i].x - center.x) * (contour[i].x - center.x) + (contour[i].y - center.y) * (contour[i].y - center.y));
     dif_tmp -= r;
-    difs.push_back(dif_tmp);
-    std::cout << difs[i] << " ";
+    pnt.r = dif_tmp;
+    pnt.rcos = contour[i].x / sqrt(contour[i].x * contour[i].x + contour[i].y *contour[i].y);
+    pnt.rsin = contour[i].y / sqrt(contour[i].x * contour[i].x + contour[i].y *contour[i].y);
+    difs.push_back(pnt);
+    difs[i].printCoord(); 
   }
-
+  return difs;
 //std::cout << "difs = " << std::endl << difs << std::endl ;
 }
+
+
+void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Point center, double r) {
+  for (int i = 0; i < vectorizedStone.size(); i++) {
+    
+
+  }
+
+}
+
 
 
 int main(int, char** argv)
@@ -150,7 +178,9 @@ int main(int, char** argv)
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
  //       Point tmp = findContCenter(contours[i]);
         markers_tmp = markers.clone();
-       compareWithCircle(markers_tmp, contours[i], r); 
+       vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r); 
+
+//       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
 imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
 
 //       std::cout << "Point = " << tmp << std::endl;
