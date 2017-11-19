@@ -42,8 +42,17 @@ void compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
       }
     }
   }
+  
+  vector<double> difs = {};
+  double dif_tmp = 0.0;
+  for (int i = 0 ; i < contour.size(); i++) {
+    dif_tmp = sqrt((contour[i].x - center.x) * (contour[i].x - center.x) + (contour[i].y - center.y) * (contour[i].y - center.y));
+    dif_tmp -= r;
+    difs.push_back(dif_tmp);
+    std::cout << difs[i] << " ";
+  }
 
-std::cout << "vec = " << std::endl << circPoints << std::endl ;
+//std::cout << "difs = " << std::endl << difs << std::endl ;
 }
 
 
