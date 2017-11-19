@@ -29,11 +29,21 @@ Point findContCenter(vector<Point> contour) {
   return mc;
 }
 
-void compareWithCircle(Mat circleImg, vector<Point> contour, double r, int imgRows, int imgCols) {
+void compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
   Point center = findContCenter(contour);
   std::cout << "cent = " << center << std::endl; 
-  circle(circleImg, center, (int)r, CV_RGB(128,128,128), -1);  
-//std::cout << "mat = " << std::endl << circleImg ;
+  Mat tmp = Mat::zeros(circleImg.size(), CV_32SC1);
+  circle(tmp, center, (int)r, CV_RGB(128,128,128)); 
+  vector<Point> circPoints = {};
+  for (int i = 0; i < circleImg.rows; i++) {
+    for (int j = 0; j < circleImg.cols; j++) {
+      if (tmp.at<int>(i, j) == 128) {
+        circPoints.push_back(Point2i(i, j));
+      }
+    }
+  }
+
+std::cout << "vec = " << std::endl << circPoints << std::endl ;
 }
 
 
@@ -131,7 +141,7 @@ int main(int, char** argv)
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
  //       Point tmp = findContCenter(contours[i]);
         markers_tmp = markers.clone();
-       compareWithCircle(markers_tmp, contours[i], r, src.rows, src.cols); 
+       compareWithCircle(markers_tmp, contours[i], r); 
 imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
 
 //       std::cout << "Point = " << tmp << std::endl;
