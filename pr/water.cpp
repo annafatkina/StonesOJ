@@ -62,10 +62,11 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
   PolarPoint<double> pnt;
   for (int i = 0 ; i < contour.size(); i++) {
     dif_tmp = sqrt((contour[i].x - center.x) * (contour[i].x - center.x) + (contour[i].y - center.y) * (contour[i].y - center.y));
-    dif_tmp -= r;
-    pnt.r = dif_tmp;
-    pnt.rcos = contour[i].x / sqrt(contour[i].x * contour[i].x + contour[i].y *contour[i].y);
-    pnt.rsin = contour[i].y / sqrt(contour[i].x * contour[i].x + contour[i].y *contour[i].y);
+   // dif_tmp -= r;
+   // pnt.r = dif_tmp;
+    pnt.rcos = (contour[i].x - center.x) / dif_tmp;
+    pnt.rsin = (contour[i].y - center.y) / dif_tmp;
+    pnt.r =  dif_tmp - r;
     difs.push_back(pnt);
     difs[i].printCoord(); 
   }
@@ -76,8 +77,9 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
 
 void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Point center, double r) {
   for (int i = 0; i < vectorizedStone.size(); i++) {
-    
-
+     int x = (r + vectorizedStone[i].r) * vectorizedStone[i].rsin + center.y;
+     int y = (r + vectorizedStone[i].r) * vectorizedStone[i].rcos + center.x;
+     recStone.at<int>(x, y) = 64;
   }
 
 }
@@ -178,7 +180,9 @@ int main(int, char** argv)
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
  //       Point tmp = findContCenter(contours[i]);
         markers_tmp = markers.clone();
+       Point center = findContCenter(contours[i]);
        vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r); 
+       recoverStone(markers_tmp, difs, center, r);
 
 //       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
 imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
