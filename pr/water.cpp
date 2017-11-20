@@ -9,26 +9,13 @@
 using namespace std;
 using namespace cv;
 
+// TODO: remake to avoid extra copies!!!
 
-int findSq(Mat markers, int bgcolor) {
-  int count = 0;
-  for( int i = 0; i  < markers.rows; i++) {
-    for (int j = 0; j < markers.cols; j++) {
-      if (markers.at<int>(i, j) != bgcolor) count++;
-    }
-  }
-  return count;
-}
 
-Point findContCenter(vector<Point> contour) {
-  Moments mu;
-  mu = moments( contour, false );
-  Point2f mc;
-  mc = Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
-//  std::cout << "contour: " << contour << std::endl;
-  return mc;
-}
-
+/**
+*	Wrapper for for polar coordinates points 
+*	Contains radius, sine(fi) and cosine(fi).
+*/
 template <typename T>
 struct PolarPoint {
   PolarPoint() {};
@@ -43,27 +30,51 @@ struct PolarPoint {
   }
 };
 
+
+/**
+*	Find square of figure that has color different from bgcolor
+*/
+int findSq(Mat markers, int bgcolor) {
+  int count = 0;
+// TODO: check if input mat is bw
+// TODO: the same func with finding exact color
+  for( int i = 0; i  < markers.rows; i++) {
+    for (int j = 0; j < markers.cols; j++) {
+      if (markers.at<int>(i, j) != bgcolor) count++;
+    }
+  }
+  return count;
+}
+
+/**
+*	Find the center of input contour
+*/
+Point findContCenter(vector<Point> contour) {
+  Moments mu;
+  mu = moments( contour, false );
+  Point2f mc;
+  mc = Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
+  return mc;
+}
+
+/**
+*	Find an array of difference between input cintour
+*	and circle radius of r with center placed in the
+*	center of given contour.
+*	Output also saves an information of sines and 
+*	cosines of every point of contour (have to be 
+*	saved to have a recovery oppotunity).
+*/
 vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
   Point center = findContCenter(contour);
   std::cout << "cent = " << center << std::endl; 
   Mat tmp = Mat::zeros(circleImg.size(), CV_32SC1);
   circle(tmp, center, (int)r, CV_RGB(128,128,128)); 
-/*  vector<Point> circPoints = {};
-  for (int i = 0; i < circleImg.rows; i++) {
-    for (int j = 0; j < circleImg.cols; j++) {
-      if (tmp.at<int>(i, j) == 128) {
-        circPoints.push_back(Point2i(i, j));
-      }
-    }
-  }
-*/  
   vector<PolarPoint<double>> difs = {};
   double dif_tmp = 0.0;
   PolarPoint<double> pnt;
   for (int i = 0 ; i < contour.size(); i++) {
     dif_tmp = sqrt((contour[i].x - center.x) * (contour[i].x - center.x) + (contour[i].y - center.y) * (contour[i].y - center.y));
-   // dif_tmp -= r;
-   // pnt.r = dif_tmp;
     pnt.rcos = (contour[i].x - center.x) / dif_tmp;
     pnt.rsin = (contour[i].y - center.y) / dif_tmp;
     pnt.r =  dif_tmp - r;
@@ -71,10 +82,12 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
     difs[i].printCoord(); 
   }
   return difs;
-//std::cout << "difs = " << std::endl << difs << std::endl ;
 }
 
-
+/**
+*	Recovers contour by data of compared circle and
+*	defference from this.
+*/
 void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Point center, double r) {
   for (int i = 0; i < vectorizedStone.size(); i++) {
      int x = (r + vectorizedStone[i].r) * vectorizedStone[i].rsin + center.y;
@@ -85,6 +98,16 @@ void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Poin
 }
 
 
+/**
+*	Extract radiuses of points from PolarPoint array.
+*/
+vector<double> extractRFromPP(vector<PolarPoint<double>> vecPP) {
+  vector<double> retVec = {};
+  for (int i = 0; i < vecPP.size(); i++) {
+    retVec.push_back(vecPP[i].r);
+  }
+  return retVec;
+}
 
 int main(int, char** argv)
 {
@@ -180,10 +203,13 @@ int main(int, char** argv)
         double r = sqrt(squares.at<double>(i)  * M_1_PI);
  //       Point tmp = findContCenter(contours[i]);
         markers_tmp = markers.clone();
-       Point center = findContCenter(contours[i]);
-       vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r); 
-       recoverStone(markers_tmp, difs, center, r);
-
+        Point center = findContCenter(contours[i]);
+        vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r); 
+        recoverStone(markers_tmp, difs, center, r);
+        vector<double> out = extractRFromPP(difs);
+        for(int i = 0; i < out.size(); i++) {
+          std::cout << out[i] << " ";
+        }
 //       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
 imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
 
@@ -236,25 +262,9 @@ std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = "
     }
     std::cout << "ttt = " << ttt << std::endl; 
     int tm=0;
-/*    for (int i = 0; i < colors.size() ; i++) 
-	tm += squares.at<int>(i);
-    std::cout << "squares = " << squares << std::endl;
-    // radius
-    cv::sqrt(squares * M_1_PI, squares);
-    std::cout << "squares = " << squares << std::endl;
-*/    // Visualize the final image
     imshow("Final Result", dst);
 
-  //  Mat tmp,thr;
-//    src=imread("../circ.png", 1);
     src = dst;
-//    cvtColor(src,tmp,CV_BGR2GRAY);
-//    threshold(tmp,thr,127, 0, THRESH_BINARY_INV);
-
- //   vector< vector <Point> > contours2; // Vector for storing contour
- //   vector< Vec4i > hierarchy;
- //   findContours( thr, contours2, hierarchy,CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE );
-
     for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) // iterate through each contour.
     {
         Rect r= boundingRect(contours[i]);
