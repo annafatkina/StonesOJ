@@ -24,8 +24,7 @@ RUN apt-get -y update \
 # copy the contents of this repository to the container
 COPY /tensorflow_cc /tensorflow_cc
 COPY /prototype /prototype
-# alternatively, clone the repository
-# RUN git clone https://github.com/FloopCZ/tensorflow_cc.git
+COPY /cgal-pr /cgal-pr
 
 RUN export LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
 
@@ -44,13 +43,11 @@ RUN make
 RUN rm -rf ~/.cache
 # install
 RUN make install
-
-# build and run example
-#RUN mkdir /tensorflow_cc/example/build
-#WORKDIR /tensorflow_cc/example/build
-#RUN cmake .. && make && ./example
-
+#cleanup
 WORKDIR /
+RUN rm -rf tensorflow_cc
+
+#install OpenCV
 RUN apt-get -y install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev \
 		       libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 RUN git clone https://github.com/opencv/opencv.git
@@ -60,5 +57,33 @@ WORKDIR /opencv/release
 RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DWITH_CUDA=OFF -DBUILD_opencv_gpu=OFF ..
 RUN make
 RUN make install
-
+#cleanup
 WORKDIR /
+RUN rm -rf opencv
+
+#install CGAL
+RUN apt-get update && apt-get install -y \
+    build-essential cmake \
+    tar \
+    libboost-dev libboost-program-options-dev \
+    libboost-thread-dev libgmp10-dev \
+    libmpfr-dev zlib1g-dev \
+    libeigen3-dev libglew1.5-dev libipe-dev \
+    libmpfi-dev libqglviewer-dev \
+    libtbb-dev \
+    qtbase5-dev qtscript5-dev libqt5svg5-dev qttools5-dev qttools5-dev-tools
+#downloading
+RUN wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.11/CGAL-4.11.tar.xz
+RUN tar -xvf CGAL-4.11.tar.xz
+#configuring and building
+WORKDIR /CGAL-4.11/
+RUN mkdir build
+WORKDIR /CGAL-4.11/build/
+RUN cmake ..
+RUN make
+RUN make install
+#cleanup
+WORKDIR /
+RUN rm -rf CGAL-4.11.tar.xz
+RUN rm -rf CGAL-4.11
+

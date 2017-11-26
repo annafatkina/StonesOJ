@@ -1,26 +1,22 @@
-cmake_minimum_required(VERSION 3.5)
-project(prototype)
-
+project (prototype)
+cmake_minimum_required(VERSION 3.3)
 set(CMAKE_CXX_STANDARD 11)
-set (CMAKE_SHARED_LINKER_FLAGS "")
+set(SOURCE_FILES src/prototype.cpp)
 
-set(SOURCE_FILES
-    src/main_video.cpp)
-
-add_executable(prototype ${SOURCE_FILES})
-
-#setting up OpenCV
+#OpenCV
 find_package( OpenCV REQUIRED )
-target_link_libraries( prototype ${OpenCV_LIBS} )
+if(NOT OpenCV_FOUND)
+  message(STATUS "OpenCV NOT FOUND")
+  return()
+endif()
 
-# try the shared tensorflow library first
+#Tensorflow
 find_package(TensorflowCC COMPONENTS Shared)
-if(TensorflowCC_Shared_FOUND)
-  target_link_libraries(prototype TensorflowCC::Shared)
-# fallback to the static library
-else()
-  find_package(TensorflowCC REQUIRED COMPONENTS Static)
-  target_link_libraries(example TensorflowCC::Static)
+if(NOT TensorflowCC_Shared_FOUND)
+  message(STATUS "Tensorflow NOT FOUND")
+  return()
 endif()
 
 
+add_executable (prototype prototype.cpp)
+target_link_libraries(prototype ${OpenCV_LIBS} TensorflowCC::Shared)

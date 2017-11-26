@@ -32,6 +32,7 @@
 #include <memory>
 #include <chrono>
 #include <atomic>
+#include <fstream>
 
 using tensorflow::Flag;
 using tensorflow::Tensor;
@@ -47,6 +48,7 @@ std::mutex _lock;
 std::atomic<bool> reading_done(false);
 std::atomic<bool> processing_done(false);
 std::atomic<bool> need_resize(false);
+std::atomic<bool> isXYZsaved(false);
 
 void process_image(Session* session, Mat img, Mat& result) {
 	
@@ -92,6 +94,27 @@ void process_image(Session* session, Mat img, Mat& result) {
 		for (int x = 0; x < 160; x++) {
 			raw_output_image.at<float>(y, x) = output_tensor_mapped(0, y, x, 0);
 		}
+	}
+
+
+	if(!isXYZsaved) {
+		std::ofstream outfile;
+		outfile.open("cloud.xyz", std::ios_base::out);
+		
+		float constant = 1.0f / 525;
+		for (int y = 0; y < 128; y++) {
+			for (int x = 0; x < 160; x++) {
+				
+				float depth = raw_output_image.at<float>(y, x);
+				float ptz = depth*0.001f;
+				float ptx = static_cast<float>(x) * ptz * constant;
+				float pty = static_cast<float>(y) * ptz * constant;
+				outfile << std::to_string(ptx) + " " + std::to_string(pty) + " " + std::to_string(ptz) + "\n";
+			}		
+		}
+
+		outfile.close();		
+		isXYZsaved = true;	
 	}
 
 	//finding min and max depth values

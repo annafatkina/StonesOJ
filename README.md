@@ -11,8 +11,6 @@ cd prototype
 mkdir build
 cmake ..
 make
-
-cp /prototype/src/graph.pb /prototype/build
 ```
 
 3) Download [Tensorflow model](http://campar.in.tum.de/files/rupprecht/depthpred/NYU_FCRN-checkpoint.zip), unzip it and copy to /prototype/build/
