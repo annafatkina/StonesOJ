@@ -37,7 +37,7 @@ int main(void)
     // + property maps to access each point's position and normal.
     // The position property map can be omitted here as we use iterators over Point_3 elements.
     PointList points;
-    std::ifstream stream("kitten.xyz");
+    std::ifstream stream("cloud.xyz");
     if (!stream ||
         !CGAL::read_xyz_points_and_normals(
                               stream,
@@ -86,7 +86,7 @@ int main(void)
     if(tr.number_of_vertices() == 0)
       return EXIT_FAILURE;
     // saves reconstructed surface mesh
-    std::ofstream out("kitten_poisson-20-30-0.375.off");
+    std::ofstream out("cloud_poisson.off");
     Polyhedron output_mesh;
     CGAL::output_surface_facets_to_polyhedron(c2t3, output_mesh);
     out << output_mesh;

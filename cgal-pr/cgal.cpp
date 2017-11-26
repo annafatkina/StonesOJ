@@ -31,7 +31,7 @@ typedef CGAL::Sequential_tag Concurrency_tag;
 int main() {
     // Reads a .xyz point set file in points[].
     std::list<PointVectorPair> points;
-    std::ifstream stream("kitten.xyz");
+    std::ifstream stream("cloud.xyz");
     if (!stream ||
         !CGAL::read_xyz_points(stream,
                                std::back_inserter(points),
@@ -76,7 +76,7 @@ int main() {
          CGAL::Second_of_pair_property_map<PointVectorPair>(),
          output_mesh, average_spacing))
       {
-	  std::ofstream out("kitten_surface.off");
+	  std::ofstream out("cloud_surface.off");
           out << output_mesh;
       }
     else
