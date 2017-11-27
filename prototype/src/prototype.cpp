@@ -98,17 +98,19 @@ void process_image(Session* session, Mat img, Mat& result) {
 
 
 	if(!isXYZsaved) {
+		int centerY = 64;
+		int centerX = 80;
 		std::ofstream outfile;
 		outfile.open("cloud.xyz", std::ios_base::out);
 		
-		float constant = 1.0f / 525;
+		float focal_length = 525.0f;
 		for (int y = 0; y < 128; y++) {
 			for (int x = 0; x < 160; x++) {
 				
 				float depth = raw_output_image.at<float>(y, x);
 				float ptz = depth*0.001f;
-				float ptx = static_cast<float>(x) * ptz * constant;
-				float pty = static_cast<float>(y) * ptz * constant;
+				float ptx = static_cast<float>(x-centerX) * ptz / focal_length;
+				float pty = static_cast<float>(y-centerY) * ptz / focal_length;
 				outfile << std::to_string(ptx) + " " + std::to_string(pty) + " " + std::to_string(ptz) + "\n";
 			}		
 		}
