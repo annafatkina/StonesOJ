@@ -5,6 +5,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <string>
+#include <vector>
+#include <fstream>
 
 using namespace std;
 using namespace cv;
@@ -30,6 +32,14 @@ struct PolarPoint {
   }
 };
 
+template <typename T>
+struct P3d {
+  P3d() {};
+  P3d(T in_x, T in_y, T in_z) {
+    x = in_x; y = in_y; z = in_z;
+  }
+  T x, y, z;
+};
 
 /**
 *	Find square of figure that has color different from bgcolor
@@ -100,6 +110,7 @@ void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Poin
 
 /**
 *	Extract radiuses of points from PolarPoint array.
+*	TODO: make template
 */
 vector<double> extractRFromPP(vector<PolarPoint<double>> vecPP) {
   vector<double> retVec = {};
@@ -109,10 +120,80 @@ vector<double> extractRFromPP(vector<PolarPoint<double>> vecPP) {
   return retVec;
 }
 
+
+vector< P3d<int> > pointCloud(vector<Mat> imgsX, vector<Mat> imgsY, vector<Mat> imgsZ, int stepX = 1, int stepY = 1, int stepZ = 1) {
+  std::cout << "Step X is  " << stepX << std::endl << "Step Y is " << stepY << std::endl << "Step Z is " << stepZ << std::endl;
+  const int nx =  imgsX.size(), ny = imgsY.size(), nz = imgsZ.size();
+
+std::cout << "nx = " << nx << ", ny = " << ny << ", nz = " << nz << std::endl;
+/*  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
+      for (int k = 0; k < nz; k++) {
+        
+      }
+    }
+  } 
+*/
+  vector<P3d<int>> outPoints = {};
+  int xcoord;
+  for (int i = 0; i < nx; i++) {
+    xcoord = i * stepX;
+    int yMat = imgsX[i].rows, zMat = imgsX[i].cols;
+    std::cout << "yMat = " << yMat << ", zMat = " << zMat << std::endl;
+    for (int j = 0; j < yMat; j++) {
+      for (int k = 0; k < zMat; k++) {
+        if (imgsX[i].at<int>(j, k) == 0) outPoints.push_back(P3d<int>(xcoord, j, k));
+      }
+    }
+  }
+
+  int ycoord;
+  for (int i = 0; i < ny; i++) {
+    ycoord = i * stepY;
+    int yMat = imgsY[i].rows, zMat = imgsY[i].cols;
+    for (int j = 0; j < yMat; j++) {
+      for (int k = 0; k < zMat; k++) {
+        if (imgsY[i].at<int>(j, k) == 0) outPoints.push_back(P3d<int>(ycoord, j, k));
+      }
+    }
+  }
+
+  int zcoord;
+  for (int i = 0; i < nz; i++) {
+    zcoord = i * stepZ;
+    int yMat = imgsZ[i].rows, zMat = imgsZ[i].cols;
+    for (int j = 0; j < yMat; j++) {
+      for (int k = 0; k < zMat; k++) {
+        if (imgsZ[i].at<int>(j, k) == 0) outPoints.push_back(P3d<int>(zcoord, j, k));
+      }
+    }
+  }
+  return outPoints;
+}
+
+
+
 int main(int, char** argv)
 {
 
+    Mat src1 = imread("../in1.png");
+    Mat src2 = imread("../in2.png");
+    Mat src3 = imread("../in3.png");
 
+    vector<Mat> mats = {};
+
+    mats.push_back(src1);
+    mats.push_back(src2);
+    mats.push_back(src3);
+    vector<P3d<int>> pc = pointCloud(mats, {}, {}, 50, 50, 50);
+
+    std::ofstream ofs ("out.xyz", std::ofstream::out);
+    int pcsize = pc.size();
+std::cout << "pcsize = " << pcsize <<std::endl;
+    for (int i = 0; i < pcsize; i++) {
+      ofs << pc[i].x << " " << pc[i].y << " " << pc[i].z << std::endl;
+    }
+    ofs.close();
     Mat src = imread(argv[1]);
     // Check if everything was fine
     if (!src.data)
