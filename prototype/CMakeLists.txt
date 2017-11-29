@@ -1,7 +1,7 @@
 project (prototype)
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_CXX_STANDARD 11)
-set(SOURCE_FILES src/prototype.cpp)
+set(SOURCE_FILES prototype.cpp)
 
 #OpenCV
 find_package( OpenCV REQUIRED )

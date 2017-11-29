@@ -87,3 +87,17 @@ WORKDIR /
 RUN rm -rf CGAL-4.11.tar.xz
 RUN rm -rf CGAL-4.11
 
+#install OpenMesh
+RUN wgethttp://www.openmesh.org/media/Releases/6.3/OpenMesh-6.3.tar.gz
+RUN tar -xvf OpenMesh-6.3.tar.gz
+WORKDIR OpenMesh-6.3/
+RUN mkdir build
+WORKDIR OpenMesh-6.3/build/
+RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_APPS=ON ..
+RUN make
+RUN make install
+#cleanup
+WORKDIR /
+RUN rm -rf OpenMesh-6.3.tar.gz
+RUN rm -rf OpenMesh-6.3
+
