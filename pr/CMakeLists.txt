@@ -7,14 +7,17 @@ cmake_minimum_required(VERSION 3.8)
 #)
 
 project(pr)
+include_directories(/home/anna/oj/mld/DynKnn4/)
+include_directories(/home/anna/oj/mld/DynKnn4/ANN/)
+#include_directories(/home/anna/oj/CGAL-4.11/build/include/)
 #hunter_add_package(OpenCV)
+#find_package (CGAL REQUIRED)
+
 find_package(OpenCV REQUIRED)
-#include_directories(/usr/include/ImageMagick-6/)
-#include_directories(${ImageMagick_Magick++_INCLUDE_DIR} ${ImageMagick_Magick++_ARCH_INCLUDE_DIR})
-#message(STATUS "IM: " ${ImageMagick_Magick++_INCLUDE_DIR})
-#find_package(ImageMagick REQUIRED)
 set(CMAKE_CXX_STANDARD 11)
 
+add_subdirectory(mld/)
+
 set(SOURCE_FILES water.cpp)
-add_executable(pr ${SOURCE_FILES})
-target_link_libraries(pr PRIVATE ${OpenCV_LIBS})
+add_executable(pr ${SOURCE_FILES} )
+target_link_libraries(pr PRIVATE ${OpenCV_LIBS} mld)
