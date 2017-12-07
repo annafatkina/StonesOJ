@@ -164,7 +164,6 @@ std::cout << "I am extracting! ";
   }
 std::cout << "Size is " << retVec->size() << std::endl;
   return retVec->size();
- // return retVec;
 }
 
 
@@ -177,14 +176,14 @@ vector< P3d<int> > pointCloud(vector<StoneContourPlane<Point>> stonePlanes) {
     int nx = stonePlanes[i].contourX.size();
     int ny = stonePlanes[i].contourY.size();
     int nz = stonePlanes[i].contourZ.size();
-    for (int ii = 0; ii < nx; i++) {
+    for (int ii = 0; ii < nx; ii++) {
       int tm = stonePlanes[i].contourX[ii].x;
-      out.push_back(P3d<int>(tm, stonePlanes[i].contourX[ii].y, stonePlanes[i].xShift));
+      out.push_back(P3d<int>(stonePlanes[i].xShift, tm, stonePlanes[i].contourX[ii].y));
     }
-    for (int ii = 0; ii < ny; i++) {
-      out.push_back(P3d<int>(stonePlanes[i].contourY[ii].x, stonePlanes[i].contourY[ii].y, stonePlanes[i].yShift));
+    for (int ii = 0; ii < ny; ii++) {
+      out.push_back(P3d<int>(stonePlanes[i].contourY[ii].x, stonePlanes[i].yShift, stonePlanes[i].contourY[ii].y));
     }
-    for (int ii = 0; ii < nz; i++) {
+    for (int ii = 0; ii < nz; ii++) {
       out.push_back(P3d<int>(stonePlanes[i].contourZ[ii].x, stonePlanes[i].contourZ[ii].y, stonePlanes[i].zShift));
     }
   }
@@ -291,41 +290,12 @@ vector<Point> makefullcont(vector<Point> in) {
 int main(int, char** argv)
 {
 
-    Mat src1 = imread("../im1.png");
-    Mat src2 = imread("../im2.png");
-    Mat src3 = imread("../im3.png");
-
-    vector<Mat> mats1 = {};
-    vector<Mat> mats2 = {};
-    vector<Mat> mats3 = {};
-    mats1.push_back(src1);
-    mats2.push_back(src2);
-    mats2.push_back(src3);
- //  vector<P3d<int>> pc = pointCloud(mats1, mats2, {}, 1000, 1000, 50);
-
-    std::ofstream ofs ("outtmp.xyz", std::ofstream::out);
-   /* int pcsize = pc.size();
-std::cout << "pcsize = " << pcsize <<std::endl;
-    for (int i = 0; i < pcsize; i++) {
-      ofs << pc[i].x << " " << pc[i].y << " " << pc[i].z << " 1 1 1" << std::endl;
-    }*/
-
-    vector<Point> out = {};
-    out = linePoints(0.0, 0.0, 5.0, 5.0);
-    
-    for(int i = 0; i < out.size(); i++) {
-      ofs << out[i].x << " " << out[i].y << " " << 0 << std::endl;
-   }
-
-    ofs.close();
     Mat src = imread(argv[1]);
     // Check if everything was fine
     if (!src.data)
         return -1;
     // Show source image
     imshow("Source Image", src);
-    // Change the background from white to black, since that will help later to extract
-    // better results during the use of Distance Transform
     for( int x = 0; x < src.rows; x++ ) {
       for( int y = 0; y < src.cols; y++ ) {
           if ( src.at<Vec3b>(x, y) == Vec3b(255,255,255) ) {
@@ -341,7 +311,6 @@ std::cout << "pcsize = " << pcsize <<std::endl;
 	  }  
         }
     }
-    // Show output image
     imshow("Black Background Image", src);
     // Create a kernel that we will use for accuting/sharpening our image
     Mat kernel = (Mat_<float>(3,3) <<
@@ -368,19 +337,6 @@ std::cout << "pcsize = " << pcsize <<std::endl;
     // Perform the distance transform algorithm
     Mat dist = bw;
     distanceTransform(bw, dist, CV_DIST_L2, 3);
-
-/*
- vector<P3d<int>> pc = pointCloud(bw, {}, {}, 50, 50, 50);
-
-    std::ofstream ofs ("out.xyz", std::ofstream::out);
-    int pcsize = pc.size();
-std::cout << "pcsize = " << pcsize <<std::endl;
-    for (int i = 0; i < pcsize; i++) {
-      ofs << pc[i].x << " " << pc[i].y << " " << pc[i].z << " 1 1 1" << std::endl;
-    }
-    ofs.close();
-*/
-
 
     // Normalize the distance image for range = {0.0, 1.0}
     // so we can visualize and threshold it
@@ -425,9 +381,9 @@ std::cout << "tmpk = " << k << std::endl;
 
 
 std::cout << "contours.size() = " << contours.size() << std::endl;
-
-    for (size_t i = 0; i < contours.size(); i++) {
-  	 markers = Mat::zeros(dist.size(), CV_32SC1); 
+    int conts_size = contours.size();
+    for (size_t i = 0; i < conts_size; i++) {
+  	markers = Mat::zeros(dist.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
         std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
@@ -438,43 +394,36 @@ std::cout << "contours.size() = " << contours.size() << std::endl;
         vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r); 
         recoverStone(markers_tmp, difs, center, r);
  
-        
-
-
-        //vector<double> out = {};
         shared_ptr<vector<double>> outptr = make_shared<vector<double>>();
-        std::cout << "first out.size() = " << outptr->size();
         int si = extractRFromPP(outptr, difs);
-        std::cout << "am here!" << std::endl;
         vector<double>& outvec =  *outptr;
-        std::cout << "first el = " << outvec[0] << std::endl;
-        outvec.resize(si);
-        int outs = outvec.size();
-        std::cout << "out.size() = " << outvec.size();
-        for(int i = 0; i < outs; i++) {
-          std::cout << i << " ";
+        int outs = si;
+        //std::cout << "out.size() = " << outvec.size();
+        for(int jj = 0; jj < outs; jj++) {
+          std::cout << jj << " ";
         }
 //       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
-imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
+        imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
 
-    
+        StoneContourPlane<Point> important;
 
-    StoneContourPlane<Point> important;
     important.contourX = contours[0];
-    important.contourY = contours[1];
+    important.contourZ = contours[1];
+
     vector<StoneContourPlane<Point>> inpoints = {};
+    std::cout << std::endl <<  "HERE NOW " << std::endl;
+
     inpoints.push_back(important);
+    inpoints.resize(1);
     vector< P3d<int> >  outcloud = pointCloud(inpoints);
-      std::ofstream ofof("out1.xyz", std::ofstream::out);
+
+    std::ofstream ofof("out1.xyz", std::ofstream::out);
     int csize = outcloud.size(); 
     std::cout << "csize = " << csize << std::endl;
     for (int i = 0; i < csize; i++) {
       ofof << outcloud[i].x << " "  << outcloud[i].y << " " << outcloud[i].z << std::endl; 
     }   
     ofof.close();
-
-
-//       std::cout << "Point = " << tmp << std::endl;
     }
     // Draw the background marker
 //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
