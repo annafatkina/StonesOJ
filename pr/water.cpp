@@ -8,6 +8,9 @@
 #include <vector>
 #include <fstream>
 #include <DynKnn4.h>
+#include <functional>
+#include <memory>
+
 
 using namespace std;
 using namespace cv;
@@ -151,15 +154,17 @@ void recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Poin
 *	Extract radiuses of points from PolarPoint array.
 *	TODO: make template
 */
-vector<double> extractRFromPP(vector<PolarPoint<double>> vecPP) {
-  vector<double> retVec = {};
+int extractRFromPP(shared_ptr<vector<double>> retVec, vector<PolarPoint<double>> vecPP) {
+  //vector<double> retVec = {};
 std::cout << "I am extracting! ";
   int nvec = vecPP.size();
   for (int i = 0; i < nvec; i++) {
-    retVec.push_back(vecPP[i].r);
+    retVec->push_back(vecPP[i].r);
+    retVec->resize(i+1);
   }
-std::cout << "Size is " << retVec.size() << std::endl;
-  return retVec;
+std::cout << "Size is " << retVec->size() << std::endl;
+  return retVec->size();
+ // return retVec;
 }
 
 
@@ -436,10 +441,17 @@ std::cout << "contours.size() = " << contours.size() << std::endl;
         
 
 
-        vector<double> out = extractRFromPP(difs);
+        //vector<double> out = {};
+        shared_ptr<vector<double>> outptr = make_shared<vector<double>>();
+        std::cout << "first out.size() = " << outptr->size();
+        int si = extractRFromPP(outptr, difs);
         std::cout << "am here!" << std::endl;
-        std::cout << "out.size() = " << out.size();
-        for(int i = 0; i < out.size(); i++) {
+        vector<double>& outvec =  *outptr;
+        std::cout << "first el = " << outvec[0] << std::endl;
+        outvec.resize(si);
+        int outs = outvec.size();
+        std::cout << "out.size() = " << outvec.size();
+        for(int i = 0; i < outs; i++) {
           std::cout << i << " ";
         }
 //       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
