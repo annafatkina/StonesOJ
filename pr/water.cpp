@@ -56,15 +56,6 @@ struct StoneContourPlane {
     contourZ = {};
     center = Point(-1.0, -1.0);
   }
-/*  void countCenter() {
-    if (contour.size() != 0) center = findContCenter(contour);
-    else std::cout << "Contour is empty!" << std::endl; 
-  }
-  Point GetCenter() {
-    if(center == Point(-1.0, -1.0)) countCenter();
-    return center;
-  }
-*/
 };
 
 template <typename T>
@@ -113,10 +104,6 @@ std::cout << "tmpk = " << k << std::endl;*/
 *	saved to have a recovery oppotunity).
 */
 vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contour, double r) {
-/*  vector<vector<Point>> tmp1 = {};
-  tmp1.push_back(contour);
-  mldcall(tmp1);
-*/
   Point center = findContCenter(contour);
   std::cout << "cent = " << center << std::endl; 
   Mat tmp = Mat::zeros(circleImg.size(), CV_32SC1);
@@ -191,53 +178,6 @@ vector< P3d<int> > pointCloud(vector<StoneContourPlane<Point>> stonePlanes) {
 
 }
 
-
-/*vector< P3d<int> > pointCloud(vector<Mat> imgsX, vector<Mat> imgsY, vector<Mat> imgsZ, 
-				int startX = 0, int startY = 0, int startZ = 0,
-				int stepX = 1, int stepY = 1, int stepZ = 1, 
-				double scaleX = 1.0, double scaleY = 1.0, double scaleZ = 1.0) {
-  std::cout << "Step X is  " << stepX << std::endl << "Step Y is " << stepY << std::endl << "Step Z is " << stepZ << std::endl;
-  const int nx =  imgsX.size(), ny = imgsY.size(), nz = imgsZ.size();
-  std::cout << "nx = " << nx << ", ny = " << ny << ", nz = " << nz << std::endl;
-  vector<P3d<int>> outPoints = {};
-
-  int xcoord;
-  for (int i = 0; i < nx; i++) {
-    xcoord = i * stepX;
-    int yMat = imgsX[i].rows, zMat = imgsX[i].cols;
-    std::cout << "yMat = " << yMat << ", zMat = " << zMat << std::endl;
-    for (int j = 0; j < yMat; j++) {
-      for (int k = 0; k < zMat; k++) {
-        if (imgsX[i].at<Vec3b>(j, k) == Vec3b(0,0,0)) outPoints.push_back(P3d<int>(startX + xcoord, j, k));
-      }
-    }
-    
-  }
-
-  int ycoord;
-  for (int i = 0; i < ny; i++) {
-    ycoord = i * stepY;
-    int yMat = imgsY[i].rows, zMat = imgsY[i].cols;
-    for (int j = 0; j < yMat; j++) {
-      for (int k = 0; k < zMat; k++) {
-        if (imgsY[i].at<Vec3b>(j, k) == Vec3b(0, 0, 0)) outPoints.push_back(P3d<int>(j, startY + ycoord, k));
-      }
-    }
-  }
-
-  int zcoord;
-  for (int i = 0; i < nz; i++) {
-    zcoord = i * stepZ;
-    int yMat = imgsZ[i].rows, zMat = imgsZ[i].cols;
-    for (int j = 0; j < yMat; j++) {
-      for (int k = 0; k < zMat; k++) {
-        if (imgsZ[i].at<Vec3b>(j, k) == Vec3b(0, 0, 0)) outPoints.push_back(P3d<int>(j, k, startZ + zcoord));
-      }
-    }
-  }
-  return outPoints;
-}
-*/
 vector<Point> linePoints(int x0, int y0, int x1, int y1)
 {
     vector<Point> pointsOfLine;
@@ -265,7 +205,6 @@ vector<Point> linePoints(int x0, int y0, int x1, int y1)
     return pointsOfLine;
 }
 
-
 vector<Point> makefullcont(vector<Point> in) {
   int s = in.size();
   vector<Point> ret = {};
@@ -285,15 +224,13 @@ vector<Point> makefullcont(vector<Point> in) {
 }
 
 
-
-
-int main(int, char** argv)
-{
-
-    Mat src = imread(argv[1]);
-    // Check if everything was fine
-    if (!src.data)
-        return -1;
+vector<vector<Point>> extractContFromImg(Mat src) {
+  /// Magic
+  if (!src.data) {
+    std::cout << "err!";
+    exit(-1);
+  }
+        
     // Show source image
     imshow("Source Image", src);
     for( int x = 0; x < src.rows; x++ ) {
@@ -303,12 +240,12 @@ int main(int, char** argv)
             src.at<Vec3b>(x, y)[1] = 0;
             src.at<Vec3b>(x, y)[2] = 0;
           }
-	  else 
-	  {
+          else
+          {
             src.at<Vec3b>(x, y)[0] = 255;
             src.at<Vec3b>(x, y)[1] = 255;
             src.at<Vec3b>(x, y)[2] = 255;
-	  }  
+          }
         }
     }
     imshow("Black Background Image", src);
@@ -322,7 +259,6 @@ int main(int, char** argv)
     filter2D(sharp, imgLaplacian, CV_32F, kernel);
     src.convertTo(sharp, CV_32F);
     Mat imgResult = sharp - imgLaplacian;
-    // convert back to 8bits gray scale
     imgResult.convertTo(imgResult, CV_8UC3);
 
     imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
@@ -364,26 +300,26 @@ int main(int, char** argv)
     Mat markers = Mat::zeros(dist.size(), CV_32SC1);
     // Draw the foreground markers
     Mat squares = Mat::zeros(contours.size(), 1, CV_64F); // for squares in points
-  vector<vector<Point>> tmp1 = {};
-  std::ofstream ofss("out.xyz", std::ofstream::out);
+    return contours;
 
-/*
-  vector<Point> invec = makefullcont(contours[0]);
-
-  for (int i = 0 ; i < contours[0].size(); i++) {
-    ofss << invec[i].x << " " << invec[i].y << " " << 0 << endl;
-  }
-  ofss.close();
-  tmp1.push_back(invec);
-  int k = mldcall(tmp1);
-std::cout << "tmpk = " << k << std::endl;
-*/
+}
 
 
-std::cout << "contours.size() = " << contours.size() << std::endl;
+int main(int, char** argv)
+{
+
+    Mat src = imread(argv[1]);
+    Mat front1 = imread("input1.png");
+    Mat front2 = imread("intput2.png");
+
+    vector<vector<Point>> contours = extractContFromImg(src);
+    Mat markers = Mat::zeros(src.size(), CV_32SC1);
+    Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
+    Mat markers_tmp;
+    std::cout << "contours.size() = " << contours.size() << std::endl;
     int conts_size = contours.size();
     for (size_t i = 0; i < conts_size; i++) {
-  	markers = Mat::zeros(dist.size(), CV_32SC1); 
+  	markers = Mat::zeros(src.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
         std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
@@ -407,27 +343,26 @@ std::cout << "contours.size() = " << contours.size() << std::endl;
 
         StoneContourPlane<Point> important;
 
-    important.contourX = contours[0];
-    important.contourZ = contours[1];
+        important.contourX = contours[0];
+        important.contourZ = contours[1];
 
-    vector<StoneContourPlane<Point>> inpoints = {};
-    std::cout << std::endl <<  "HERE NOW " << std::endl;
+        vector<StoneContourPlane<Point>> inpoints = {};
+        std::cout << std::endl <<  "HERE NOW " << std::endl;
 
-    inpoints.push_back(important);
-    inpoints.resize(1);
-    vector< P3d<int> >  outcloud = pointCloud(inpoints);
+        inpoints.push_back(important);
+        inpoints.resize(1);
+        vector< P3d<int> >  outcloud = pointCloud(inpoints);
 
-    std::ofstream ofof("out1.xyz", std::ofstream::out);
-    int csize = outcloud.size(); 
-    std::cout << "csize = " << csize << std::endl;
-    for (int i = 0; i < csize; i++) {
-      ofof << outcloud[i].x << " "  << outcloud[i].y << " " << outcloud[i].z << std::endl; 
-    }   
-    ofof.close();
+        std::ofstream ofof("out1.xyz", std::ofstream::out);
+        int csize = outcloud.size(); 
+        std::cout << "csize = " << csize << std::endl;
+        for (int i = 0; i < csize; i++) {
+          ofof << outcloud[i].x << " "  << outcloud[i].y << " " << outcloud[i].z << std::endl; 
+        }   
+        ofof.close();
     }
-    // Draw the background marker
 //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
-    imshow("Markers", markers*10000);
+/*    imshow("Markers", markers*10000);
     // Perform the watershed algorithm
     watershed(src, markers);
     Mat mark = Mat::zeros(markers.size(), CV_8UC1);
