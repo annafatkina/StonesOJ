@@ -299,13 +299,15 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 
 }
 
+enum Orientation {xOrient, yOrient, zOrient};
 
 struct PosedImgs {
   Mat img;
   int beginX, beginY, beginZ;
+  Orientation orient;
   
-  PosedImgs(Mat in) : img(in), beginX(0), beginY(0), beginZ(0) { }
-  PosedImgs(Mat in, int x, int y, int z) : img(in), beginX(x), beginY(y), beginZ(z) { }
+  PosedImgs(Mat in, Orientation orIn) : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0) { }
+  PosedImgs(Mat in, Orientation orIn, int x, int y, int z) : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z) { }
 
   Mat getMat() {
     return img;
@@ -315,7 +317,7 @@ struct PosedImgs {
 void combineImgs(vector<PosedImgs> imgs) {
   int imgscount = imgs.size();
   for (int k = 0; k < imgscount; k++) {
-    Mat src = imgs[k].getMat();
+    Mat src(imgs[k].getMat());
     vector<vector<Point>> contours = extractContFromImg(src);
     Mat markers = Mat::zeros(src.size(), CV_32SC1);
     Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
@@ -341,17 +343,19 @@ void combineImgs(vector<PosedImgs> imgs) {
         vector<double>& outvec =  *outptr;
         int outs = si;
         //std::cout << "out.size() = " << outvec.size();
-        for(int jj = 0; jj < outs; jj++) {
-          std::cout << jj << " ";
-        }
+    //    for(int jj = 0; jj < outs; jj++) {
+    //      std::cout << jj << " ";
+     //   }
 //       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
         imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
 
         StoneContourPlane<Point> important;
-
-        important.contourX = contours[0];
-        important.contourZ = contours[1];
-
+        
+        switch(imgs[k].orient) {
+          case(xOrient) : important.contourX = contours[i]; break;
+          case(zOrient) : important.contourZ = contours[i]; break;
+          case(yOrient) : important.contourY = contours[i]; break;
+        }
         vector<StoneContourPlane<Point>> inpoints = {};
         std::cout << std::endl <<  "HERE NOW " << std::endl;
 
@@ -359,7 +363,7 @@ void combineImgs(vector<PosedImgs> imgs) {
         inpoints.resize(1);
         vector< P3d<int> >  outcloud = pointCloud(inpoints);
 
-        std::ofstream ofof("out" + to_string(i) + ".xyz", std::ofstream::out);
+        std::ofstream ofof("out" + to_string(i) + to_string(k) + ".xyz", std::ofstream::out);
         int csize = outcloud.size();
         std::cout << "csize = " << csize << std::endl;
         for (int ii = 0; ii < csize; ii++) {
@@ -378,13 +382,24 @@ int main(int, char** argv)
 {
 
     Mat src = imread(argv[1]);
-    Mat front1 = imread("input1.png");
-    Mat front2 = imread("input2.png");
+    Mat front1 = imread("../im1.png");
+    if (!front1.data) {
+    std::cout << "First err!";
+    exit(-1);
+  }
+
+    Mat front2 = imread("../input1.png");
+    Mat front3 = imread("../input2.png");
+    //Mat front4 = imread("../im4.png");
     vector<PosedImgs> sources = {};
-    PosedImgs mat1(src);
-    sources.push_back(mat1);
-    PosedImgs mat2(front1);
-    PosedImgs mat3(front2);
+    //PosedImgs mat1(src, xOrient);
+    //sources.push_back(mat1);
+    PosedImgs mat0(front3, xOrient);
+   // PosedImgs mat1(front4, xOrient);
+    PosedImgs mat2(front1, yOrient);
+    PosedImgs mat3(front2, yOrient);
+    sources.push_back(mat0);
+    //sources.push_back(mat1);
     sources.push_back(mat2);
     sources.push_back(mat3);
     combineImgs(sources);
