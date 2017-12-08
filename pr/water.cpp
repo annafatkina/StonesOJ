@@ -295,12 +295,81 @@ vector<vector<Point>> extractContFromImg(Mat src) {
     vector<vector<Point> > contours;
     vector< Vec4i > hierarchy;
     findContours(dist_8u, contours, hierarchy,  CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-    // Create the marker image for the watershed algorithm
-    Mat markers_tmp;
-    Mat markers = Mat::zeros(dist.size(), CV_32SC1);
-    // Draw the foreground markers
-    Mat squares = Mat::zeros(contours.size(), 1, CV_64F); // for squares in points
     return contours;
+
+}
+
+
+struct PosedImgs {
+  Mat img;
+  int beginX, beginY, beginZ;
+  
+  PosedImgs(Mat in) : img(in), beginX(0), beginY(0), beginZ(0) { }
+  PosedImgs(Mat in, int x, int y, int z) : img(in), beginX(x), beginY(y), beginZ(z) { }
+
+  Mat getMat() {
+    return img;
+  }
+};
+
+void combineImgs(vector<PosedImgs> imgs) {
+  int imgscount = imgs.size();
+  for (int k = 0; k < imgscount; k++) {
+    Mat src = imgs[k].getMat();
+    vector<vector<Point>> contours = extractContFromImg(src);
+    Mat markers = Mat::zeros(src.size(), CV_32SC1);
+    Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
+    Mat markers_tmp;
+    std::cout << "contours.size() = " << contours.size() << std::endl;
+    int conts_size = contours.size();
+    for (size_t i = 0; i < conts_size; i++) {
+        contours[i] = makefullcont(contours[i]);
+
+        markers = Mat::zeros(src.size(), CV_32SC1);
+        drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
+        squares.at<double>(i) = (double)findSq(markers, 0);
+        std::cout << "squares.at<double>(i)  = " << squares.at<double>(i)  << std::endl;
+        double r = sqrt(squares.at<double>(i)  * M_1_PI);
+        Point tmp = findContCenter(contours[i]);
+        markers_tmp = markers.clone();
+        Point center = findContCenter(contours[i]);
+        vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r);
+        recoverStone(markers_tmp, difs, center, r);
+
+        shared_ptr<vector<double>> outptr = make_shared<vector<double>>();
+        int si = extractRFromPP(outptr, difs);
+        vector<double>& outvec =  *outptr;
+        int outs = si;
+        //std::cout << "out.size() = " << outvec.size();
+        for(int jj = 0; jj < outs; jj++) {
+          std::cout << jj << " ";
+        }
+//       recovered = recoverStone(markers_tmp, vectorizedStone,  r);
+        imshow("Markers-tmp" + to_string(i), markers_tmp*10000);
+
+        StoneContourPlane<Point> important;
+
+        important.contourX = contours[0];
+        important.contourZ = contours[1];
+
+        vector<StoneContourPlane<Point>> inpoints = {};
+        std::cout << std::endl <<  "HERE NOW " << std::endl;
+
+        inpoints.push_back(important);
+        inpoints.resize(1);
+        vector< P3d<int> >  outcloud = pointCloud(inpoints);
+
+        std::ofstream ofof("out" + to_string(i) + ".xyz", std::ofstream::out);
+        int csize = outcloud.size();
+        std::cout << "csize = " << csize << std::endl;
+        for (int ii = 0; ii < csize; ii++) {
+          ofof << outcloud[ii].x << " "  << outcloud[ii].y << " " << outcloud[ii].z << std::endl;
+        }
+        ofof.close();
+    }
+
+
+  }
 
 }
 
@@ -310,15 +379,28 @@ int main(int, char** argv)
 
     Mat src = imread(argv[1]);
     Mat front1 = imread("input1.png");
-    Mat front2 = imread("intput2.png");
+    Mat front2 = imread("input2.png");
+    vector<PosedImgs> sources = {};
+    PosedImgs mat1(src);
+    sources.push_back(mat1);
+    PosedImgs mat2(front1);
+    PosedImgs mat3(front2);
+    sources.push_back(mat2);
+    sources.push_back(mat3);
+    combineImgs(sources);
 
-    vector<vector<Point>> contours = extractContFromImg(src);
+
+
+ /*   vector<vector<Point>> contours = extractContFromImg(src);
     Mat markers = Mat::zeros(src.size(), CV_32SC1);
     Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
     Mat markers_tmp;
     std::cout << "contours.size() = " << contours.size() << std::endl;
     int conts_size = contours.size();
     for (size_t i = 0; i < conts_size; i++) {
+
+        contours[i] = makefullcont(contours[i]);
+
   	markers = Mat::zeros(src.size(), CV_32SC1); 
         drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
         squares.at<double>(i) = (double)findSq(markers, 0);
@@ -361,6 +443,16 @@ int main(int, char** argv)
         }   
         ofof.close();
     }
+*/
+
+
+
+
+
+
+
+
+
 //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
 /*    imshow("Markers", markers*10000);
     // Perform the watershed algorithm
