@@ -1,8 +1,9 @@
+#define _USE_MATH_DEFINES
+
 #include <opencv2/opencv.hpp>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <string>
 #include <vector>
@@ -173,42 +174,58 @@ struct Stone3d {
         int upSize = stoneContours.size();
        // Mat tmpMat;
         for (int i = start; i < end; i +=step) {
+            vector<P3d<double >> tmpvec = {};
             for(int j = 0; j < upSize; j++) {
                 int downSize = stoneContours[j].size();
-                vector<P3d<double >> tmpvec = {};
                 for(int k = 0; k < downSize; k++) {
                     if (stoneContours[j][k].x == i) {
                         tmpvec.push_back(stoneContours[j][k]);
                     }
                 }
-                int tmpvecsize = tmpvec.size();
-                if(tmpvecsize > 1){
-                    vector<Point> tmp2d = make2d(tmpvec, xOrient);
-                    double radOfSmall = 0;
-                    for(int ii = 0; ii < tmpvecsize; ii++) {
-                        // such strange coors because of xOrient
-                        radOfSmall += sqrt((tmp2d[ii].x - center.y)*(tmp2d[ii].x - center.y) + (tmp2d[ii].y - center.z)*(tmp2d[ii].y - center.z));
-                    }
-                    radOfSmall /= 3.0; // /2
-
-                    int matDim = findMaxDim(tmp2d);
-                    cv::Mat tmpMat = Mat::zeros(matDim+1, matDim+1, CV_32SC1);
-                    vector<PolarPoint<double>> tmpComparer = compareWithCircle(tmpMat, tmp2d, radOfCenter, Point_<int>(center.y, center.z));
-                    int polarSize = tmpComparer.size();
-                    for (int kk = 0; kk < polarSize; kk++) {
-                        tmpComparer[i].r -= (radOfCenter-radOfSmall);
-                    }
-                    // todo minim
-                    tmp2d = makefullcont(tmp2d);
-                    vector<P3d<double >> tmp3d = {};
-                    int tmpsize = tmp2d.size();
-                    for(int k = 0; k < tmpsize; k++) {
-                        tmp3d.push_back(P3d<double >( i, tmp2d[k].x, tmp2d[k].y));
-                    }
-                    stoneContours.push_back(tmp3d);
-
-                }
             }
+
+            vector<Point> res =  makefullcont(make2d(tmpvec, xOrient));
+            vector<P3d<double >> resres = {};
+            int sres = res.size();
+            for (int k = 0; k < sres; k++) {
+                resres.push_back(P3d<double>(i, res[k].x, res[k].y));
+            }
+            addContourToStone(resres);
+            // right
+            /*
+            int tmpvecsize = tmpvec.size();
+            if(tmpvecsize > 1) {
+                vector<Point> tmp2d = make2d(tmpvec, xOrient);
+                double radOfSmall = 0;
+                for (int ii = 0; ii < tmpvecsize; ii++) {
+                    // such strange coors because of xOrient
+                    radOfSmall += sqrt((tmp2d[ii].x - center.y) * (tmp2d[ii].x - center.y) +
+                                       (tmp2d[ii].y - center.z) * (tmp2d[ii].y - center.z));
+                }
+                //radOfSmall /= 2.0; // /2
+                radOfSmall /= tmpvecsize;
+
+                 int matDim = findMaxDim(tmp2d);
+                cv::Mat tmpMat = Mat::zeros(matDim + 1, matDim + 1, CV_32SC1);
+                vector<PolarPoint<double>> tmpComparer = compareWithCircle(tmpMat, tmp2d, radOfCenter,
+                                                                           Point_<int>(center.y, center.z));
+                int polarSize = tmpComparer.size();
+               // for (int kk = 0; kk < polarSize; kk++) {
+                   // tmpComparer[kk].r -= (radOfCenter - radOfSmall);
+                //}
+
+                tmp2d = recoverStone(tmpMat, tmpComparer,  Point_<int>(center.y, center.z), radOfSmall);
+                // todo make stone of comrarer
+                //
+                //tmp2d = makefullcont(tmp2d);
+                vector<P3d<double >> tmp3d = {};
+                int tmpsize = tmp2d.size();
+                for (int k = 0; k < tmpsize; k++) {
+                    tmp3d.push_back(P3d<double>(i, tmp2d[k].x, tmp2d[k].y));
+                }
+                stoneContours.push_back(tmp3d);
+            }
+             */
         }
     }
 };
@@ -349,8 +366,8 @@ int findMaxDim(vector<Point> in) {
     for(int i = 0; i < inSizr; i++) {
         if(in[i].x > max) max = in[i].x;
         if(in[i].y > max) max = in[i].y;
-
     }
+    return max;
 }
 
 vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contour, double r, Point center) {
@@ -372,6 +389,7 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
     }
     return difs;
 }
+
 
 vector<Point> recoverStone(Mat recStone, vector<PolarPoint<double>> vectorizedStone, Point center, double r) {
     vector<Point> points = {};
