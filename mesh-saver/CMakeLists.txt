@@ -4,13 +4,13 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCE_FILES mesh-saver.cpp)
 
 #Eigen
-find_package(Eigen3)
+find_package(Eigen3 REQUIRED)
 if (EIGEN3_FOUND)
   include(${EIGEN3_USE_FILE})
 endif()
 
 #CGAL
-find_package(CGAL QUIET COMPONENTS)
+find_package(CGAL QUIET COMPONENTS REQUIRED)
 if (NOT CGAL_FOUND)
   message(STATUS "CGAL NOT FOUND")
   return()
@@ -25,7 +25,7 @@ if (NOT Boost_FOUND)
 endif()
 
 #OpenMesh
-find_package(OpenMesh)
+find_package(OpenMesh REQUIRED)
 if (NOT OpenMesh_FOUND)
   message(STATUS "OpenMesh NOT FOUND")
   return()

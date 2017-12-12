@@ -34,6 +34,10 @@
 #include <atomic>
 #include <fstream>
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/common/io.h>
+
 using tensorflow::Flag;
 using tensorflow::Tensor;
 using tensorflow::Status;
@@ -49,8 +53,11 @@ std::atomic<bool> reading_done(false);
 std::atomic<bool> processing_done(false);
 std::atomic<bool> need_resize(false);
 std::atomic<bool> isXYZsaved(false);
+std::atomic<bool> convertingToCloudDone(false);
 
-void process_image(Session* session, Mat img, Mat& result) {
+typedef pcl::PointCloud<pcl::PointXYZ> CloudType;
+
+void process_image(Session* session, Mat img, Mat& result, Mat& depth_mat) {
 	
 	//Opening the Image
 	int height = 228;
@@ -96,28 +103,7 @@ void process_image(Session* session, Mat img, Mat& result) {
 		}
 	}
 
-
-	if(!isXYZsaved) {
-		int centerY = 64;
-		int centerX = 80;
-		std::ofstream outfile;
-		outfile.open("cloud.xyz", std::ios_base::out);
-		
-		float focal_length = 525.0f;
-		for (int y = 0; y < 128; y++) {
-			for (int x = 0; x < 160; x++) {
-				
-				float depth = raw_output_image.at<float>(y, x);
-				float ptz = depth*0.001f;
-				float ptx = static_cast<float>(x-centerX) * ptz / focal_length;
-				float pty = static_cast<float>(y-centerY) * ptz / focal_length;
-				outfile << std::to_string(ptx) + " " + std::to_string(pty) + " " + std::to_string(ptz) + "\n";
-			}		
-		}
-
-		outfile.close();		
-		isXYZsaved = true;	
-	}
+	depth_mat = raw_output_image.clone();
 
 	//finding min and max depth values
 	double min;
@@ -168,9 +154,10 @@ void readingThread(VideoCapture& reader, queue<shared_ptr<vector<Mat>>>& process
 	reading_done = true;
 }
 
-void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processingQueue, queue<shared_ptr<vector<Mat>>>& writingQueue) {
+void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processingQueue, queue<shared_ptr<vector<Mat>>>& writingQueue, queue<shared_ptr<vector<Mat>>>& matQueue) {
 	
-	vector<Mat> writingVector;
+    vector<Mat> writingVector;
+	vector<Mat> depthVector;
 
 	while (!reading_done) {
 		//sleeping while queue is empty
@@ -182,7 +169,7 @@ void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processi
 		while (!processingQueue.empty()) {
 			_lock.lock();
 			shared_ptr<vector<Mat>> ptr = processingQueue.front();
-			cout << "taking, current processing queue size: " << processingQueue.size() * 20 << " frames" << endl;
+			cout << "current processing queue size: " << processingQueue.size() * 20 << " frames" << endl;
 			processingQueue.pop();
 			_lock.unlock();
 			
@@ -195,9 +182,11 @@ void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processi
 			for (int i = 0; i < imageVector.size(); i++) {
 				Mat ColorsMap;
 				Mat img = imageVector[i].clone();
+				Mat depth_mat;
 				
-				process_image(session, imageVector[i], ColorsMap);
+				process_image(session, imageVector[i], ColorsMap, depth_mat);
 				writingVector.push_back(ColorsMap.clone());
+				depthVector.push_back(depth_mat.clone());
 
 				if (writingVector.size() == 20 || (i == (imageVector.size() - 1))) {
 					shared_ptr<vector<Mat>> ptr = make_shared<vector<Mat>>();
@@ -205,12 +194,19 @@ void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processi
 						ptr->push_back(im.clone());
 						im = Mat();
 					}
+					shared_ptr<vector<Mat>> depth_ptr = make_shared<vector<Mat>>();
+					for (auto & im : depthVector) {
+						depth_ptr->push_back(im.clone());
+						im = Mat();
+					}
 
 					_lock.lock();
 					writingQueue.push(ptr);
+					matQueue.push(depth_ptr);
 					_lock.unlock();
 
 					writingVector.clear();
+					depthVector.clear();
 				}
 			}
 		}
@@ -220,16 +216,24 @@ void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processi
 	while (!processingQueue.empty()) {
 		_lock.lock();
 		shared_ptr<vector<Mat>> ptr = processingQueue.front();
-		cout << "taking, current processing queue size: " << processingQueue.size()*20 << " frames" << endl;
+		cout << "current processing queue size: " << processingQueue.size() * 20 << " frames" << endl;
 		processingQueue.pop();
 		_lock.unlock();
-
+		
+		if (!ptr) {
+			cout << "bad data!" << endl;
+			continue;
+		}
 		vector<Mat> &imageVector = *ptr;
 
 		for (int i = 0; i < imageVector.size(); i++) {
 			Mat ColorsMap;
-			process_image(session, imageVector[i], ColorsMap);
+			Mat img = imageVector[i].clone();
+			Mat depth_mat;
+			
+			process_image(session, imageVector[i], ColorsMap, depth_mat);
 			writingVector.push_back(ColorsMap.clone());
+			depthVector.push_back(depth_mat.clone());
 
 			if (writingVector.size() == 20 || (i == (imageVector.size() - 1))) {
 				shared_ptr<vector<Mat>> ptr = make_shared<vector<Mat>>();
@@ -237,12 +241,19 @@ void processingThread(Session* session, queue<shared_ptr<vector<Mat>>>& processi
 					ptr->push_back(im.clone());
 					im = Mat();
 				}
+				shared_ptr<vector<Mat>> depth_ptr = make_shared<vector<Mat>>();
+				for (auto & im : depthVector) {
+					depth_ptr->push_back(im.clone());
+					im = Mat();
+				}
 
 				_lock.lock();
 				writingQueue.push(ptr);
+				matQueue.push(depth_ptr);
 				_lock.unlock();
 
 				writingVector.clear();
+				depthVector.clear();
 			}
 		}
 	}
@@ -262,7 +273,7 @@ void writingThread(VideoWriter& writer, queue<shared_ptr<vector<Mat>>>& writingQ
 		while (!writingQueue.empty()) {
 			_lock.lock();
 			shared_ptr<vector<Mat>> ptr = writingQueue.front();
-			cout << "writing, current writing queue size: " << writingQueue.size()*20 << " frames" << endl;
+			cout << "current writing queue size: " << writingQueue.size()*20 << " frames" << endl;
 			writingQueue.pop();
 			_lock.unlock();
 
@@ -279,7 +290,7 @@ void writingThread(VideoWriter& writer, queue<shared_ptr<vector<Mat>>>& writingQ
 	while (!writingQueue.empty()) {
 		_lock.lock();
 		shared_ptr<vector<Mat>> ptr = writingQueue.front();
-		cout << "writing, current writing queue size: " << writingQueue.size() * 20 << " frames" << endl;
+		cout << "current writing queue size: " << writingQueue.size() * 20 << " frames" << endl;
 		writingQueue.pop();
 		_lock.unlock();
 
@@ -292,6 +303,188 @@ void writingThread(VideoWriter& writer, queue<shared_ptr<vector<Mat>>>& writingQ
 	
 	writer.release();
 }
+
+void convertMatToCloud(Mat image, CloudType &result) {
+	
+	CloudType pointcloud;
+	pointcloud.width = 128;
+	pointcloud.height = 160;
+	pointcloud.points.resize(pointcloud.height * pointcloud.width); 	
+	
+	int centerY = 64;
+	int centerX = 80;
+	float focal_length = 525.0f;
+	int depth_idx = 0; 
+
+	for (int y = 0; y < 128; y++) {
+		for (int x = 0; x < 160; x++, ++depth_idx) {
+			float depth = image.at<float>(y, x);
+			pcl::PointXYZ& pt = pointcloud.points[depth_idx]; 
+			pt.z = depth*0.001f;
+			pt.x = static_cast<float>(x-centerX) * pt.z / focal_length;
+			pt.y = static_cast<float>(y-centerY) * pt.z / focal_length;
+		}		
+	}
+	
+	//is it necessary?
+	pointcloud.sensor_origin_.setZero ();
+	pointcloud.sensor_orientation_.w () = 0.0f;
+	pointcloud.sensor_orientation_.x () = 1.0f;
+	pointcloud.sensor_orientation_.y () = 0.0f;
+	pointcloud.sensor_orientation_.z () = 0.0f;
+	
+	copyPointCloud(pointcloud, result); 				
+}
+
+void matToCloudThread (queue<shared_ptr<vector<Mat>>>& matQueue, queue<shared_ptr<vector<CloudType>>>& cloudQueue) {
+	
+	vector<CloudType> cloudVector;
+	while (!processing_done) {
+		//sleeping while queue is empty
+		while (matQueue.empty()) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
+
+		//processing until queue has elements
+		while (!matQueue.empty()) {
+			_lock.lock();
+			shared_ptr<vector<Mat>> ptr = matQueue.front();
+			cout << "current matQueue size: " << matQueue.size() * 20 << " frames" << endl;
+			matQueue.pop();
+			_lock.unlock();
+			
+			if (!ptr) {
+				cout << "bad data!" << endl;
+				continue;
+			}
+			vector<Mat> &imageVector = *ptr;
+
+			for (int i = 0; i < imageVector.size(); i++) {
+				Mat img = imageVector[i].clone();
+				CloudType cloud;
+				convertMatToCloud(img, cloud);
+				cloudVector.push_back(cloud); //clone?
+
+				if (cloudVector.size() == 20 || (i == (imageVector.size() - 1))) {
+					shared_ptr<vector<CloudType>> cloud_ptr = make_shared<vector<CloudType>>();
+					for (auto &cl : cloudVector) {
+						cloud_ptr->push_back(cl); //clone?
+						cl = CloudType();
+					}
+
+					_lock.lock();
+					cloudQueue.push(cloud_ptr);
+					_lock.unlock();
+
+					cloudVector.clear();
+				}
+			}
+		}
+	}
+
+	//when reading is done we will process images left
+	while (!matQueue.empty()) {
+		_lock.lock();
+		shared_ptr<vector<Mat>> ptr = matQueue.front();
+		cout << "current matQueue size: " << matQueue.size() * 20 << " frames" << endl;
+		matQueue.pop();
+		_lock.unlock();
+		
+		if (!ptr) {
+			cout << "bad data!" << endl;
+			continue;
+		}
+		vector<Mat> &imageVector = *ptr;
+
+		for (int i = 0; i < imageVector.size(); i++) {
+			Mat img = imageVector[i].clone();
+			CloudType cloud;
+			convertMatToCloud(img, cloud);
+			cloudVector.push_back(cloud); //clone?
+
+			if (cloudVector.size() == 20 || (i == (imageVector.size() - 1))) {
+				shared_ptr<vector<CloudType>> cloud_ptr = make_shared<vector<CloudType>>();
+				for (auto &cl : cloudVector) {
+					cloud_ptr->push_back(cl); //clone?
+					cl = CloudType();
+				}
+
+				_lock.lock();
+				cloudQueue.push(cloud_ptr);
+				_lock.unlock();
+
+				cloudVector.clear();
+			}
+		}
+	}
+	cout << "converting mat to cloud done" << endl;
+	convertingToCloudDone = true;
+}
+
+void cloudProcessingThread (queue<shared_ptr<vector<CloudType>>>& cloudQueue) {
+	int cloud_idx = 0;
+	while (!convertingToCloudDone) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+	while (!cloudQueue.empty()) {
+		_lock.lock();
+		shared_ptr<vector<CloudType>> ptr = cloudQueue.front();
+		cout << "current cloudQueue size: " << cloudQueue.size() * 20 << " frames" << endl;
+		cloudQueue.pop();
+		_lock.unlock();
+		
+		if (!ptr) {
+			cout << "bad data!" << endl;
+			continue;
+		}
+		vector<CloudType> &cloudVector = *ptr;
+
+		for (int i = 0; i < cloudVector.size(); i++) {
+			std::ofstream outfile;			
+			outfile.open("cloud_" + std::to_string(cloud_idx) + ".xyz", std::ios_base::out);
+			CloudType cloud = cloudVector[i];
+			int width = cloud.width;
+			int height = cloud.height;
+			for (int j = 0; j < width; j++) {
+				for (int k = 0; k < height; k++) {
+					pcl::PointXYZ pt = cloud(j, k);
+					outfile << std::to_string(pt.x) + " " + std::to_string(pt.y) + " " + std::to_string(pt.z) + "\n";
+				}			
+			}
+			cloud_idx++;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char* argv[]) {
 
@@ -346,7 +539,7 @@ int main(int argc, char* argv[]) {
 		throw runtime_error("Error loading checkpoint from " + checkpointFilename + ": " + status.ToString());
 	}
 	
-    //setting up reader
+    	//setting up reader
 	auto reader = VideoCapture(input_video_path);
 
 	//setting up writer
@@ -364,21 +557,27 @@ int main(int argc, char* argv[]) {
 	auto writer = VideoWriter(output_video_path, codec, fps, output_video_size, true);
 
 
-    //creating queues
+    	//creating queues
 	queue<shared_ptr<vector<Mat>>> processingQueue;
 	queue<shared_ptr<vector<Mat>>> writingQueue;
+	queue<shared_ptr<vector<Mat>>> matQueue;
+	queue<shared_ptr<vector<CloudType>>> cloudQueue;
 
 	clock_t tStart = clock();
 
 	//starting threads
 	std::thread readingThr(readingThread, ref(reader), ref(processingQueue));
-	std::thread processingThr(processingThread, session, ref(processingQueue), ref(writingQueue));
+	std::thread processingThr(processingThread, session, ref(processingQueue), ref(writingQueue), ref(matQueue));
 	std::thread writingThr(writingThread, ref(writer), ref(writingQueue));
+	std::thread matToCloudThr(matToCloudThread, ref(matQueue), ref(cloudQueue));
+	std::thread cloudProcessingThr(cloudProcessingThread, ref(cloudQueue));
 
-    //stopping threads
+    	//stopping threads
 	readingThr.join(); cout << "reading thread has been terminated" << endl;
 	processingThr.join(); cout << "processing thread has been terminated" << endl;
 	writingThr.join(); cout << "writing thread has been terminated" << endl;
+	matToCloudThr.join(); cout << "matToCloud thread has been terminated" << endl;
+	cloudProcessingThr.join(); cout << "cloudProcessing thread has been terminated" << endl;
 
 	printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 	return EXIT_SUCCESS;

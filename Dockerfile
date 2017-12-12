@@ -3,6 +3,7 @@ FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 # denotes whether shared or static tensorflow is built
 ARG shared=ON
 
+#install some prerequisites for Tensorflow
 RUN apt-get -y update
 RUN apt-get -y install software-properties-common
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -24,8 +25,9 @@ RUN apt-get -y update \
 # copy the contents of this repository to the container
 COPY /tensorflow_cc /tensorflow_cc
 COPY /prototype /prototype
-COPY /cgal-pr /cgal-pr
+COPY /mesh-saver /mesh-saver
 
+#fix some CUDA bugs
 RUN export LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
 
 # install tensorflow
@@ -47,7 +49,7 @@ RUN make install
 WORKDIR /
 RUN rm -rf tensorflow_cc
 
-#install OpenCV
+#install prerequisites for OpenCV
 RUN apt-get -y install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev \
 		       libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 RUN git clone https://github.com/opencv/opencv.git
@@ -55,13 +57,15 @@ WORKDIR /opencv/
 RUN mkdir release
 WORKDIR /opencv/release
 RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DWITH_CUDA=OFF -DBUILD_opencv_gpu=OFF ..
+#build
 RUN make
+#install
 RUN make install
 #cleanup
 WORKDIR /
 RUN rm -rf opencv
 
-#install CGAL
+#install prerequisites for CGAL
 RUN apt-get update && apt-get install -y \
     build-essential cmake \
     tar \
@@ -75,12 +79,13 @@ RUN apt-get update && apt-get install -y \
 #downloading
 RUN wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.11/CGAL-4.11.tar.xz
 RUN tar -xvf CGAL-4.11.tar.xz
-#configuring and building
 WORKDIR /CGAL-4.11/
 RUN mkdir build
 WORKDIR /CGAL-4.11/build/
+#configuring and building
 RUN cmake ..
 RUN make
+#install
 RUN make install
 #cleanup
 WORKDIR /
@@ -88,16 +93,48 @@ RUN rm -rf CGAL-4.11.tar.xz
 RUN rm -rf CGAL-4.11
 
 #install OpenMesh
-RUN wgethttp://www.openmesh.org/media/Releases/6.3/OpenMesh-6.3.tar.gz
+RUN wget http://www.openmesh.org/media/Releases/6.3/OpenMesh-6.3.tar.gz
 RUN tar -xvf OpenMesh-6.3.tar.gz
 WORKDIR OpenMesh-6.3/
 RUN mkdir build
 WORKDIR OpenMesh-6.3/build/
+#configure and build
 RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_APPS=ON ..
 RUN make
+#install
 RUN make install
 #cleanup
 WORKDIR /
 RUN rm -rf OpenMesh-6.3.tar.gz
 RUN rm -rf OpenMesh-6.3
 
+#install prerequisites for PCL
+RUN apt-get update && apt-get install -y \
+	linux-libc-dev \
+        libusb-1.0-0-dev libusb-dev libudev-dev \
+	mpi-default-dev openmpi-bin openmpi-common \
+	libflann1.8 libflann-dev \
+	libboost-all-dev \
+	libvtk5.10-qt4 libvtk5.10 libvtk5-dev \
+	libqhull* libgtest-dev \
+	freeglut3-dev pkg-config \
+	libxmu-dev libxi-dev \
+	qt-sdk openjdk-8-jdk openjdk-8-jre
+RUN git clone https://github.com/PointCloudLibrary/pcl.git pcl-trunk \
+	&& ln -s /pcl-trunk /pcl \
+	&& cd /pcl && git checkout pcl-1.8.0 \
+	&& mkdir -p /pcl-trunk/release
+WORKDIR /pcl/release
+#configure
+RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_GPU=OFF -DBUILD_apps=ON -DBUILD_examples=ON ..
+#build
+RUN make -j4
+#install
+RUN make install
+#cleanup
+WORKDIR /
+RUN rm-rf pcl
+
+#fix some eigen bugs
+RUN rm /usr/local/include/tensorflow/tensorflow/core/framework/type_traits.h
+RUN cp /prototype/type_traits.h /usr/local/include/tensorflow/tensorflow/core/framework/
