@@ -135,6 +135,12 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
 
 vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone, Point center, double r, Mat recStone = Mat::zeros(0, 0, CV_32SC1));
 
+template <typename T>
+T signum(T in) {
+    if(in < 0) return -1;
+    if(in > 0) return 1;
+    if(in == 0) return 0;
+}
 
 
 template <typename T>
@@ -156,6 +162,9 @@ struct Stone3d {
             numOfPoints += in_cont.size();
             //Point cent = findContCenter(in_cont);
         }
+    }
+    int getContoursNum () {
+        return stoneContours.size();
     }
     void toFile(string fileName) {
         std::ofstream ofof(fileName, std::ofstream::out);
@@ -206,7 +215,7 @@ struct Stone3d {
                 return;
             }
             bool majorOrientChecker;
-            int collapsedCoord;
+            int collapsedCoord = 0;
             majorOrientChecker = stoneContours[iterCont][0].x == stoneContours[iterCont][1].x &&
                                  stoneContours[iterCont][1].x == stoneContours[iterCont][2].x;
             if (majorOrientChecker) {
@@ -243,13 +252,17 @@ struct Stone3d {
             Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
 
             vector<PolarPoint<double>> polar2d = compareWithCircle(tmpMat, tCont2d, radOfCenter, center2d);
+            int polar2dsize = polar2d.size();
+            int curRad = 1;
+            int curRadForPolar = 1;
+            //int radStep = (end - start) / step;
+            for(int thirdCoord = start; thirdCoord < end; thirdCoord += step) {
 
-            for(int i = 0, thirdCoord = start; thirdCoord < end; i++, thirdCoord += step) {
                 vector<PolarPoint<double>> curPolar2d = polar2d;
-                curPolar2d[i].r -= 100;
-                vector<Point> tmpv = recoverStone(curPolar2d, center2d, radOfCenter);
+                vector<Point> tmpv = recoverStone(curPolar2d, center2d, curRadForPolar);
                 vector<P3d<double >> out = {};
-                for(int ii =0 ; ii < contPointNum; ii++) {
+                int tmpvSize = tmpv.size();
+                for(int ii =0 ; ii < tmpvSize; ii++) {
                     switch (denseOrientation) {
                         case xOrient: out.push_back(P3d<double >(thirdCoord, tmpv[ii].x, tmpv[ii].y));
                             break;
@@ -259,8 +272,13 @@ struct Stone3d {
                             break;
                     }
                 }
+                std::cout << "curfor polar = " << curRadForPolar << " rad = " << radOfCenter  << "cur rad = " << curRad  << ", collapsed = " << collapsedCoord << std::endl;
                 stoneContours.push_back(out);
+                curRad += 1;
+                curRadForPolar = collapsedCoord - abs(curRad - collapsedCoord - start) ;
+
             }
+            std::cout << "end - start = " << end - start << std::endl;
 
         }
 
@@ -428,17 +446,17 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg, vector<Point> contou
 
 
 vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone, Point center, double r, Mat recStone) {
-    int idebug = 0;
-    int jdebug = 0;
-    cout << recStone.channels() << endl;
     vector<Point> points = {};
     int vStoneSize = vectorizedStone.size();
     for (int i = 0; i < vStoneSize; i++) {
-        int x = (r + vectorizedStone[i].r) * vectorizedStone[i].rsin + center.y;
-        int y = (r + vectorizedStone[i].r) * vectorizedStone[i].rcos + center.x;
-        if(recStone.cols != 0) recStone.at<int>(x, y) = 64;
+        int x, y;
+        x = static_cast<int>((r + vectorizedStone[i].r) * vectorizedStone[i].rsin + center.y);
+        y = static_cast<int>((r + vectorizedStone[i].r) * vectorizedStone[i].rcos + center.x);
+        if(recStone.cols != 0) {
+            recStone.at<int>(x, y) = 64;
+        }
+        points.push_back(Point(x, y));
     }
-
     return points;
 }
 
@@ -568,6 +586,10 @@ void addToStones(StoneContourPlane<Point> cont, shared_ptr<vector<Stone3d<double
 
 
 void combineImgs(vector<PosedImgs> imgs) {
+
+
+
+
     int imgscount = imgs.size();
     //std::ofstream ofof("out.xyz", std::ofstream::out);
     // vector<Stone3d<double>> stone3dVec;
@@ -582,13 +604,9 @@ void combineImgs(vector<PosedImgs> imgs) {
         int conts_size = contours.size();
 
         for (int i = 0; i < conts_size; i++) {
-            //   contours[i] = makefullcont(contours[i]);
-            /*
-            vector<vector<Point>> tmp1 = {};
-            tmp1.push_back(contours[i]);
-            int k = mldcall(tmp1);
-            */
-            //ofof  <<  << std::endl;
+
+
+            std::cout << "i = " << i << ", conts_size = " << conts_size << std::endl;
 
             markers = Mat::zeros(src.size(), CV_32SC1);
             drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i) + 1), -1);
@@ -603,7 +621,7 @@ void combineImgs(vector<PosedImgs> imgs) {
             vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r, center);
             //waitKey(0);
             cout << "1+++\n";
-         //:   recoverStone(difs, center, r, markers_tmp);
+            recoverStone(difs, center, r, markers_tmp);
             //waitKey(0);
             cout << "2+++\n";
 
@@ -632,9 +650,14 @@ void combineImgs(vector<PosedImgs> imgs) {
     //waitKey(0);
     vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
     int st3dsize = stone3dVec.size();
+    std::cout << "st3dsize= " << st3dsize << std::endl;
     for (int st = 0; st < st3dsize; st++) {
-        stone3dVec[st].makeDense();
+        std::cout << "st = " << st << "st3dsize = " <<st3dsize << std::endl;
+        std::cout << " consnum = " << stone3dVec[st].getContoursNum() << std::endl;
+        stone3dVec[st].makeDense(1);
+        std::cout << " consnum = " << stone3dVec[st].getContoursNum() << std::endl;
     }
+
     for (int st = 0; st < st3dsize; st++) {
         stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
     }
