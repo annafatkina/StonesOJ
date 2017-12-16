@@ -16,10 +16,7 @@
 using namespace std;
 using namespace cv;
 
-
 enum Orientation { xOrient, yOrient, zOrient };
-
-
 
 // TODO: remake to avoid extra copies!!!
 /**
@@ -31,7 +28,6 @@ struct PolarPoint {
     typedef T value_type;
     T r;
     T rcos, rsin;
-
     PolarPoint() = default;
     PolarPoint(T inR, T inRcos, T inRsin) : r(inR), rcos(inRcos), rsin(inRsin) { }
     inline void printCoord() {
@@ -60,16 +56,11 @@ Point findContCenter(vector<Point> contour) {
 template<typename T>
 struct StoneContourPlane {
     vector<T> contour;
-    //vector<Point> contourY;
-    // vector<Point> contourZ;
     Orientation orient;
     Point center;
     int xShift, yShift, zShift;
     StoneContourPlane() : xShift(0), yShift(0), zShift(0) {
         contour = {};
-        // contourY = {};
-        // contourZ = {};
-
     }
     Point getCenter() {
         center = findContCenter(contour);
@@ -196,8 +187,8 @@ struct Stone3d {
         return out;
     }
     void makeDense(int step = 1) {
-        int start = center.x - radOfCenter;
-        int end = center.x + radOfCenter;
+        int start = 0 ; //= center.x - radOfCenter;
+        int end = 0;// = center.x + radOfCenter;
         int numOfConts = stoneContours.size();
         Orientation denseOrientation;
         if (numOfConts != 0) {
@@ -211,7 +202,7 @@ struct Stone3d {
                 }
             }
             if(iterCont == -1) {
-                std::cout << "Can't make dense! More points needed!" << std::endl;
+                std::cerr << "Can't make dense! More points needed!" << std::endl;
                 return;
             }
             bool majorOrientChecker;
@@ -221,21 +212,28 @@ struct Stone3d {
             if (majorOrientChecker) {
                 denseOrientation = xOrient;
                 collapsedCoord = stoneContours[iterCont][0].x;
-            }
-            majorOrientChecker = stoneContours[iterCont][0].y == stoneContours[iterCont][1].y &&
-                                 stoneContours[iterCont][1].y == stoneContours[iterCont][2].y;
-            if (majorOrientChecker) {
-                denseOrientation = yOrient;
-                collapsedCoord = stoneContours[iterCont][0].y;
+                start =  center.x - radOfCenter;
+                end = center.x + radOfCenter;
+            } else {
+                majorOrientChecker = stoneContours[iterCont][0].y == stoneContours[iterCont][1].y &&
+                                     stoneContours[iterCont][1].y == stoneContours[iterCont][2].y;
 
+                if (majorOrientChecker) {
+                    denseOrientation = yOrient;
+                    collapsedCoord = stoneContours[iterCont][0].y;
+                    start = center.y - radOfCenter;
+                    end = center.y + radOfCenter;
+                } else {
+                    majorOrientChecker = stoneContours[iterCont][0].z == stoneContours[iterCont][1].z &&
+                                         stoneContours[iterCont][1].z == stoneContours[iterCont][2].z;
+                    if (majorOrientChecker) {
+                        denseOrientation = zOrient;
+                        collapsedCoord = stoneContours[iterCont][0].z;
+                        start = center.z - radOfCenter;
+                        end = center.z + radOfCenter;
+                    }
+                }
             }
-            majorOrientChecker = stoneContours[iterCont][0].z == stoneContours[iterCont][1].z &&
-                                 stoneContours[iterCont][1].z == stoneContours[iterCont][2].z;
-            if (majorOrientChecker) {
-                denseOrientation = zOrient;
-                collapsedCoord = stoneContours[iterCont][0].z;
-            }
-
             Point center2d;
             switch (denseOrientation) {
                 case xOrient: center2d = Point(center.y, center.z);
@@ -250,7 +248,6 @@ struct Stone3d {
             vector<Point> tCont2d = make2d(templateContour, denseOrientation);
             int dim = findMaxDim(tCont2d);
             Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
-
             vector<PolarPoint<double>> polar2d = compareWithCircle(tmpMat, tCont2d, radOfCenter, center2d);
             int polar2dsize = polar2d.size();
             int curRad = 1;
@@ -272,13 +269,9 @@ struct Stone3d {
                             break;
                     }
                 }
-                std::cout << "curfor polar = " << curRadForPolar << " rad = " << radOfCenter  << "cur rad = " << curRad  << ", collapsed = " << collapsedCoord << std::endl;
                 stoneContours.push_back(out);
-                curRad += 1;
-                curRadForPolar = collapsedCoord - abs(curRad - collapsedCoord - start) ;
-
+                curRadForPolar += -signum(thirdCoord - collapsedCoord);
             }
-            std::cout << "end - start = " << end - start << std::endl;
 
         }
 
@@ -302,8 +295,6 @@ int findSq(Mat markers, int bgcolor) {
     return count;
 }
 
-
-
 /**
 *	Find the center of input contour
 */
@@ -322,10 +313,6 @@ P3d<double> findContCenter3dPlane(vector<P3d<double>> contour3d, Orientation ori
     return res;
 }
 
-
-
-
-
 /**
 *	Extract radiuses of points from PolarPoint array.
 *	TODO: make template
@@ -336,36 +323,11 @@ int extractRFromPP(shared_ptr<vector<double>> retVec, vector<PolarPoint<double>>
     int nvec = vecPP.size();
     for (int i = 0; i < nvec; i++) {
         retVec->push_back(vecPP[i].r);
-        retVec->resize(i + 1);
+//        retVec->resize(i + 1);
     }
     std::cout << "Size is " << retVec->size() << std::endl;
     return retVec->size();
 }
-
-
-
-
-/*vector< P3d<int> > pointCloud(vector<StoneContourPlane<Point>> stonePlanes) {
-int planesSize = stonePlanes.size();
-vector<P3d<int> > out = {};
-for (int i = 0 ; i < planesSize; i++) {
-int nx = stonePlanes[i].contourX.size();
-int ny = stonePlanes[i].contourY.size();
-int nz = stonePlanes[i].contourZ.size();
-for (int ii = 0; ii < nx; ii++) {
-int tm = stonePlanes[i].contourX[ii].x;
-out.push_back(P3d<int>(stonePlanes[i].xShift, tm + stonePlanes[i].yShift, stonePlanes[i].contourX[ii].y + stonePlanes[i].zShift));
-}
-for (int ii = 0; ii < ny; ii++) {
-out.push_back(P3d<int>(stonePlanes[i].contourY[ii].x + stonePlanes[i].xShift, stonePlanes[i].yShift, stonePlanes[i].contourY[ii].y + stonePlanes[i].zShift));
-}
-for (int ii = 0; ii < nz; ii++) {
-out.push_back(P3d<int>(stonePlanes[i].contourZ[ii].x + stonePlanes[i].xShift, stonePlanes[i].contourZ[ii].y +stonePlanes[i].yShift, stonePlanes[i].xShift));
-}
-}
-return out;
-}
-*/
 
 vector<Point> linePoints(int x0, int y0, int x1, int y1)
 {
@@ -410,7 +372,6 @@ vector<Point> makefullcont(vector<Point> in) {
         }
     }
     return ret;
-
 }
 
 
@@ -450,8 +411,11 @@ vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone, Point cen
     int vStoneSize = vectorizedStone.size();
     for (int i = 0; i < vStoneSize; i++) {
         int x, y;
-        x = static_cast<int>((r + vectorizedStone[i].r) * vectorizedStone[i].rsin + center.y);
-        y = static_cast<int>((r + vectorizedStone[i].r) * vectorizedStone[i].rcos + center.x);
+        int multiplier = r + vectorizedStone[i].r;
+        if (multiplier < 0) multiplier = 0;
+        x = static_cast<int>(multiplier * vectorizedStone[i].rsin + center.y);
+        y = static_cast<int>(multiplier * vectorizedStone[i].rcos + center.x);
+
         if(recStone.cols != 0) {
             recStone.at<int>(x, y) = 64;
         }
@@ -586,13 +550,7 @@ void addToStones(StoneContourPlane<Point> cont, shared_ptr<vector<Stone3d<double
 
 
 void combineImgs(vector<PosedImgs> imgs) {
-
-
-
-
     int imgscount = imgs.size();
-    //std::ofstream ofof("out.xyz", std::ofstream::out);
-    // vector<Stone3d<double>> stone3dVec;
     shared_ptr<vector<Stone3d<double>>> stone3dVecPtr = make_shared<vector<Stone3d<double>>>();
     for (int k = 0; k < imgscount; k++) {
         Mat src(imgs[k].getMat());
@@ -600,42 +558,23 @@ void combineImgs(vector<PosedImgs> imgs) {
         Mat markers = Mat::zeros(src.size(), CV_32SC1);
         Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
         Mat markers_tmp;
-        std::cout << "contours.size() = " << contours.size() << std::endl;
         int conts_size = contours.size();
-
         for (int i = 0; i < conts_size; i++) {
-
-
-            std::cout << "i = " << i << ", conts_size = " << conts_size << std::endl;
-
             markers = Mat::zeros(src.size(), CV_32SC1);
             drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i) + 1), -1);
             squares.at<double>(i) = (double)findSq(markers, 0);
             std::cout << "squares.at<double>(i)  = " << squares.at<double>(i) << std::endl;
             double r = sqrt(squares.at<double>(i)  * M_1_PI);
             Point tmp = findContCenter(contours[i]);
-
             markers_tmp = markers.clone();
-
             Point center = findContCenter(contours[i]);
             vector<PolarPoint<double>> difs = compareWithCircle(markers_tmp, contours[i], r, center);
-            //waitKey(0);
-            cout << "1+++\n";
             recoverStone(difs, center, r, markers_tmp);
-            //waitKey(0);
-            cout << "2+++\n";
-
             shared_ptr<vector<double>> outptr = make_shared<vector<double>>();
             int si = extractRFromPP(outptr, difs);
-            //waitKey(0);
-            cout << "3+++\n";
-
             vector<double>& outvec = *outptr;
             int outs = si;
-            //waitKey(0);
-
             imshow("Markers-tmp" + to_string(i), markers_tmp * 10000);
-            //waitKey(0);
 
             StoneContourPlane<Point> important;
             important.orient = imgs[k].orient;
@@ -645,38 +584,26 @@ void combineImgs(vector<PosedImgs> imgs) {
             important.contour = contours[i];
             addToStones(important, stone3dVecPtr, r);
         }
-
     }
-    //waitKey(0);
     vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
     int st3dsize = stone3dVec.size();
-    std::cout << "st3dsize= " << st3dsize << std::endl;
     for (int st = 0; st < st3dsize; st++) {
-        std::cout << "st = " << st << "st3dsize = " <<st3dsize << std::endl;
-        std::cout << " consnum = " << stone3dVec[st].getContoursNum() << std::endl;
         stone3dVec[st].makeDense(1);
-        std::cout << " consnum = " << stone3dVec[st].getContoursNum() << std::endl;
     }
-
     for (int st = 0; st < st3dsize; st++) {
         stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
     }
-
-
-    //ofof.close();
 }
 
 
 int main(int, char** argv)
 {
-
     Mat src = imread(argv[1]);
     Mat front1 = imread("../im1.png");
     if (!front1.data) {
         std::cout << "First err!";
         exit(-1);
     }
-
     Mat front2 = imread("../im2.png");
     Mat front3 = imread("../im3.png");
     //Mat front4 = imread("../im4.png");
@@ -692,68 +619,6 @@ int main(int, char** argv)
     sources.push_back(mat2);
     sources.push_back(mat3);
     combineImgs(sources);
-
-
-
-
-    //    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
-    /*    imshow("Markers", markers*10000);
-    // Perform the watershed algorithm
-    watershed(src, markers);
-    Mat mark = Mat::zeros(markers.size(), CV_8UC1);
-    markers.convertTo(mark, CV_8UC1);
-    bitwise_not(mark, mark);
-    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
-    // image looks like at that point
-    // Generate random colors
-    vector<Vec3b> colors;
-    for (size_t i = 0; i < contours.size(); i++)
-    {
-    int b = theRNG().uniform(0, 255);
-    int g = theRNG().uniform(0, 255);
-    int r = theRNG().uniform(0, 255);
-    colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
-    }
-    // Create the result image
-    Mat dst = Mat::zeros(markers.size(), CV_8UC3);
-    // Fill labeled objects with random colors
-    std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
-    //std::cout << colors.size();
-    //    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
-    //  std::cout << "squares = " << squares << std::endl;
-    int ttt = 0;
-    for (int i = 0; i < markers.rows; i++)
-    {
-    for (int j = 0; j < markers.cols; j++)
-    {
-    int index = markers.at<int>(i,j);
-    if (index > 0 && index <= static_cast<int>(contours.size())) {
-    dst.at<Vec3b>(i,j) = colors[index-1];
-    //squares.at<double>(index-1) += 1.0;
-    ttt +=1;
-    }
-    else {
-    dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
-    //squares.at<int>(0) += 1;
-    ttt +=1;
-    }
-    }
-    }
-    std::cout << "ttt = " << ttt << std::endl;
-    int tm=0;
-    imshow("Final Result", dst);
-    src = dst;
-    for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) // iterate through each contour.
-    {
-    Rect r= boundingRect(contours[i]);
-    //std::cout << contours[i] << std::endl;
-    std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
-    if(hierarchy[i][2]<0) //Check if there is a child contour
-    rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,0,255),2,8,0); //Opened contour
-    else
-    rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,255,0),2,8,0); //closed contour
-    }
-    imshow("Final final Result", src);
-    /* */   waitKey(0);
+    waitKey(0);
     return 0;
 }
