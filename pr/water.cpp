@@ -1,6 +1,5 @@
 #define _USE_MATH_DEFINES
 
-#include <DynKnn4.h>
 #include <cmath>
 #include <fstream>
 #include <functional>
