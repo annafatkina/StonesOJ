@@ -232,7 +232,7 @@ struct Stone3d {
 		}
 		ofof.close();
 	}
-	vector<P3d<double>> crossSection(int in, Orientation CSorient) {
+	vector<P3d<double>> crossSection(int in, Orientation CSorient, int step = 1) {
 		int upSize;
 		upSize = static_cast<int>(stoneContours.size());
 		vector<P3d<double>> out = {};
@@ -241,19 +241,19 @@ struct Stone3d {
 			for (int j = 0; j < downSize; j++) {
 				switch (CSorient) {
 					case xOrient:
-						if (stoneContours[i][j].x == in)
+						if (abs(stoneContours[i][j].x - in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
 						break;
 					case yOrient:
-						if (stoneContours[i][j].y == in)
+						if (abs(stoneContours[i][j].y == in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
 						break;
 					case zOrient:
-						if (stoneContours[i][j].z == in)
+						if (abs(stoneContours[i][j].z - in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
@@ -356,12 +356,11 @@ struct Stone3d {
 			int polar2dsize = polar2d.size();
 			int curRad = 1;
 			int curRadForPolar = 1;
-			for (int thirdCoord = start; thirdCoord < end;
-			     thirdCoord++) {
+			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
 				if (thirdCoord % step != 0) continue;
 				if (thirdCoord == collapsedCoord) continue;
 				vector<P3d<double>> curCS =
-				    crossSection(thirdCoord, denseOrientation);
+				    crossSection(thirdCoord, denseOrientation, step);
 				double maxRange = GetContRange(
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
@@ -455,24 +454,24 @@ int extractRFromPP(shared_ptr<vector<double>> retVec,
 	return retVec->size();
 }
 
-vector<Point> linePoints(int x0, int y0, int x1, int y1, int step) {
+vector<Point> lineP(int x0, int y0, int x1, int y1, int step) {
 	vector<Point> pointsOfLine;
 
-	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-	int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+	int dx = abs(x1 - x0), sx = step * (x0 < x1 ? 1 : -1);
+	int dy = abs(y1 - y0), sy = step*(y0 < y1 ? 1 : -1);
 
 	int err = (dx > dy ? dx : -dy) / 2, e2;
-	int counter = 0;
+	int counter = 0, exi = 0;
 	for (;;) {
-		counter++;
-		pointsOfLine.push_back(Point(x0, y0));
-		if (x0 == x1 && y0 == y1) break;
+        counter++;
+        if (abs(x0 - x1) < step && abs(y0 - y1) < step) break;
 		if (counter % step != 0) {
-			std::cout << "exit!" << std::endl;
+            exi++;
+			std::cout << "exit!"  << exi << std::endl;
 			continue;
 		}
-		std::cout << "Not exit!" << std::endl;
-
+        pointsOfLine.push_back(Point(x0, y0));
+        std::cout << "Not exit!" << std::endl;
 		e2 = err;
 		if (e2 > -dx) {
 			err -= dy;
@@ -483,6 +482,7 @@ vector<Point> linePoints(int x0, int y0, int x1, int y1, int step) {
 			y0 += sy;
 		}
 	}
+    std::cout << "exites = " << exi << ", coutner = " << counter << ", s = " << pointsOfLine.size() << std::endl;
 	return pointsOfLine;
 }
 
@@ -492,20 +492,21 @@ vector<Point> makefullcont(vector<Point> in, int step) {
 	if (s != 0) ret.push_back(in[0]);
 	int tmps = 0;
 	for (int i = 1; i < s; i++) {
-		// if (i % step != 0) continue;
 		vector<Point> tmp = {};
-		tmp = linePoints(in[i - 1].x, in[i - 1].y, in[i].x, in[i].y,
+		tmp = lineP(in[i - 1].x, in[i - 1].y, in[i].x, in[i].y,
 				 step);
 		tmps = tmp.size();
-		ret.push_back(in[i]);
+        std::cout << "tmps = " << tmps << std::endl;
+        ret.push_back(in[i]);
 		for (int j = 0; j < tmps; j++) {
 			ret.push_back(tmp[j]);
 		}
 	}
 
 	vector<Point> tmp =
-	    linePoints(in[s - 1].x, in[s - 1].y, in[0].x, in[0].y, step);
+	    lineP(in[s - 1].x, in[s - 1].y, in[0].x, in[0].y, step);
 	tmps = tmp.size();
+    std::cout << "tmps = " << tmps << std::endl;
 	ret.push_back(in[0]);
 	for (int j = 0; j < tmps; j++) {
 		ret.push_back(tmp[j]);
@@ -739,7 +740,7 @@ void combineImgs(vector<PosedImgs> imgs) {
 			Point tmp = findContCenter(contours[i]);
 			markers_tmp = markers.clone();
 			Point center = findContCenter(contours[i]);
-			contours[i] = makefullcont(contours[i], 1);
+			contours[i] = makefullcont(contours[i], 5);
 			int ttttmp = 0;
 			vector<PolarPoint<double>> difs = compareWithCircle(
 			    markers_tmp, contours[i], r, center, ttttmp);
