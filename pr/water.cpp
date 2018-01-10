@@ -163,21 +163,12 @@ double GetContRange(vector<P3d<double>> in, Orientation orient, Point& cent) {
 		return 0;
 	}
 	int counter = 0;
-	// std::cout << "In size = " << inSize << std::endl;
 	for (int k = 0; k < inSize; k++) {
-		// std::cout << "Point is " <<  in[k].x << " " << in[k].y <<
-		// in[k].z << std::endl;
 		for (int i = 0; i < inSize; i++) {
 			if (i == k) continue;
 			double tmp = sqrt(
 			    (in2d[i].x - in2d[k].x) * (in2d[i].x - in2d[k].x) +
 			    (in2d[i].y - in2d[k].y) * (in2d[i].y - in2d[k].y));
-			// double tmp = sqrt((in2d[i].x - center.x)*(in2d[i].x -
-			// center.x)
-			//                  + (in2d[i].y - center.y)*(in2d[i].y
-			//                  - center.y));
-
-			// double tmp = abs(in2d[i].y - in2d[k].y);
 			if (tmp > max) {
 				max = tmp;
 				counter++;
@@ -185,7 +176,6 @@ double GetContRange(vector<P3d<double>> in, Orientation orient, Point& cent) {
 			}
 		}
 	}
-
 	return max;
 }
 
@@ -353,8 +343,6 @@ struct Stone3d {
 			vector<PolarPoint<double>> polar2d = compareWithCircle(
 			    tmpMat, tCont2d, radOfCenter, center2d, deviation);
 			int polar2dsize = polar2d.size();
-			int curRad = 1;
-			int curRadForPolar = 1;
 			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
 				if (thirdCoord % step != 0) continue;
 				if (thirdCoord == collapsedCoord) continue;
@@ -364,13 +352,6 @@ struct Stone3d {
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
 				vector<PolarPoint<double>> curPolar2d = polar2d;
-				std::cout << "maxRange =  " << maxRange
-					  << " dev = " << deviation
-					  << " radofCenter = " << radOfCenter
-					  << " diff = "
-					  << abs(radOfCenter - (maxRange) / 2 -
-						 curRadForPolar)
-					  << std::endl;
 				vector<Point> tmpv =
 				    recoverStone(curPolar2d, center2d,
 						 maxRange / 2 - deviation);
@@ -402,9 +383,8 @@ struct Stone3d {
 					}
 				}
 				stoneContours.push_back(out);
-				curRadForPolar +=
-				    -signum(thirdCoord - collapsedCoord);
 			}
+			stoneContours.erase(stoneContours.begin(), stoneContours.begin() + numOfConts);
 		}
 	}
 };
@@ -442,14 +422,10 @@ P3d<double> findContCenter3dPlane(vector<P3d<double>> contour3d,
 */
 int extractRFromPP(shared_ptr<vector<double>> retVec,
 		   vector<PolarPoint<double>> vecPP) {
-	// vector<double> retVec = {};
-	std::cout << "I am extracting! ";
 	int nvec = vecPP.size();
 	for (int i = 0; i < nvec; i++) {
 		retVec->push_back(vecPP[i].r);
-		//        retVec->resize(i + 1);
 	}
-	std::cout << "Size is " << retVec->size() << std::endl;
 	return retVec->size();
 }
 
@@ -460,17 +436,14 @@ vector<Point> lineP(int x0, int y0, int x1, int y1, int step) {
 	int dy = abs(y1 - y0), sy = step*(y0 < y1 ? 1 : -1);
 
 	int err = (dx > dy ? dx : -dy) / 2, e2;
-	int counter = 0, exi = 0;
+	int counter = 0;
 	for (;;) {
         counter++;
         if (abs(x0 - x1) < step && abs(y0 - y1) < step) break;
 		if (counter % step != 0) {
-            exi++;
-			std::cout << "exit!"  << exi << std::endl;
 			continue;
 		}
-        pointsOfLine.push_back(Point(x0, y0));
-        std::cout << "Not exit!" << std::endl;
+        	pointsOfLine.push_back(Point(x0, y0));
 		e2 = err;
 		if (e2 > -dx) {
 			err -= dy;
@@ -481,7 +454,6 @@ vector<Point> lineP(int x0, int y0, int x1, int y1, int step) {
 			y0 += sy;
 		}
 	}
-    std::cout << "exites = " << exi << ", coutner = " << counter << ", s = " << pointsOfLine.size() << std::endl;
 	return pointsOfLine;
 }
 
@@ -495,8 +467,7 @@ vector<Point> makefullcont(vector<Point> in, int step) {
 		tmp = lineP(in[i - 1].x, in[i - 1].y, in[i].x, in[i].y,
 				 step);
 		tmps = tmp.size();
-        std::cout << "tmps = " << tmps << std::endl;
-        ret.push_back(in[i]);
+        	ret.push_back(in[i]);
 		for (int j = 0; j < tmps; j++) {
 			ret.push_back(tmp[j]);
 		}
@@ -505,7 +476,6 @@ vector<Point> makefullcont(vector<Point> in, int step) {
 	vector<Point> tmp =
 	    lineP(in[s - 1].x, in[s - 1].y, in[0].x, in[0].y, step);
 	tmps = tmp.size();
-    std::cout << "tmps = " << tmps << std::endl;
 	ret.push_back(in[0]);
 	for (int j = 0; j < tmps; j++) {
 		ret.push_back(tmp[j]);
@@ -526,9 +496,6 @@ int findMaxDim(vector<Point> in) {
 vector<PolarPoint<double>> compareWithCircle(Mat circleImg,
 					     vector<Point> contour, double r,
 					     Point center, int& deviation) {
-	// Point center;
-	// center = findContCenter(contour);
-	//   std::cout << "cent = " << center << std::endl;
 	Mat tmp = Mat::zeros(circleImg.size(), CV_32SC1);
 	circle(tmp, center, (int)r, 128);
 	vector<PolarPoint<double>> difs = {};
@@ -591,7 +558,6 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	}
 
 	// Show source image
-	// imshow("Source Image", src);
 	for (int x = 0; x < src.rows; x++) {
 		for (int y = 0; y < src.cols; y++) {
 			if (src.at<Vec3b>(x, y) == Vec3b(255, 255, 255)) {
@@ -605,7 +571,6 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 			}
 		}
 	}
-	// imshow("Black Background Image", src);
 	// Create a kernel that we will use for accuting/sharpening our image
 	Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1, 1);
 	Mat imgLaplacian;
@@ -616,14 +581,11 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	imgResult.convertTo(imgResult, CV_8UC3);
 
 	imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
-	// imshow( "Laplace Filtered Image", imgLaplacian );
-	// imshow("New Sharped Image", imgResult);
 	src = imgResult;  // copy back
 	// Create binary image from source image
 	Mat bw;
 	cvtColor(src, bw, CV_BGR2GRAY);
 	threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-	//   imshow("Binary Image", bw);
 	// Perform the distance transform algorithm
 	Mat dist = bw;
 	distanceTransform(bw, dist, CV_DIST_L2, 3);
@@ -631,7 +593,6 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	// Normalize the distance image for range = {0.0, 1.0}
 	// so we can visualize and threshold it
 	normalize(dist, dist, 0, 1., NORM_MINMAX);
-	//   imshow("Distance Transform Image", dist);
 	// Threshold to obtain the peaks
 	// This will be the markers for the foreground objects
 
@@ -640,7 +601,6 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	// Dilate a bit the dist image
 	Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
 	dilate(dist, dist, kernel1);
-	// imshow("Peaks", dist);
 	// Create the CV_8U version of the distance image
 	// It is needed for findContours()
 	Mat dist_8u;
@@ -751,9 +711,6 @@ void combineImgs(vector<PosedImgs> imgs) {
 
 			vector<double>& outvec = *outptr;
 			int outs = si;
-			imshow("Markers-tmp" + to_string(i),
-			       markers_tmp * 10000);
-
 			StoneContourPlane<Point> important;
 			important.orient = imgs[k].orient;
 			important.xShift = imgs[k].beginX;
