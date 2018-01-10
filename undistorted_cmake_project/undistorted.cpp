@@ -80,7 +80,6 @@ struct UndistortEngine {
 	bool CreateModel(const UndistortEngineSettings & settings, const cv::Mat & frame) {
 			//We read the input image and some variables are initialized
 	image<unsigned char> input(frame); // input image
-	imwrite("current_frame.jpg", frame);
 	auto width = input.width(), height = input.height();//input image dimensions
 	auto size_ = width*height; // image size
 	image<unsigned char> gray(width,height,1,0);//gray-level image to call canny
@@ -151,17 +150,15 @@ struct UndistortEngine {
 	}
 };
 
-void process_frame(Mat src, Mat& dst)
+void process_frame(Mat src, Mat& dst, UndistortEngineSettings& settings, UndistortEngine& ue, bool needToTrain)
 {
 	Mat current = src.clone();
 	fastNlMeansDenoisingColored(current, current);
 
-	UndistortEngineSettings settings;
-	UndistortEngine ue;
 	auto train = [&]() {
 		auto cl = createCLAHE();
 		cvtColor(current, current, COLOR_BGR2GRAY);
-		cl->apply(current, current);
+		//cl->apply(current, current);
 		cvtColor(current, current, COLOR_GRAY2RGB);
 
 		auto train_t = chrono::system_clock::now().time_since_epoch();
@@ -172,7 +169,9 @@ void process_frame(Mat src, Mat& dst)
 		auto train_dt = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() - train_t).count();
 		cout << "distortion model trained in " << train_dt << "ms." <<  endl;
 	};
-	train();
+	if (needToTrain) {
+		train();
+	}	
 
 	auto show = [&]() {
 			auto t = chrono::system_clock::now().time_since_epoch();
@@ -207,11 +206,24 @@ int main(int argc, char* argv[]) {
 	Size output_video_size;
 	output_video_size = Size(625, 500);
 	auto writer = VideoWriter(output_video_path, codec, fps, output_video_size, true);
-        
+
+	UndistortEngineSettings settings;
+	UndistortEngine ue;
+        bool needToTrain = true;
+	int counter = 0;
+
 	while (reader.read(current_image)) {
+		if (counter % 300 == 0) {
+			needToTrain = true;
+		}
+		else {
+			needToTrain = false;
+		}
+		
 		Mat undistorted_image;
-		process_frame(current_image.clone(), undistorted_image);
+		process_frame(current_image.clone(), undistorted_image, settings, ue, needToTrain);
 		writer.write(undistorted_image);
+		counter++;
 	}
 	writer.release();	
 	return 0;
