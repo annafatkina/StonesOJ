@@ -330,12 +330,23 @@ struct Stone3d {
 			std::cout << "MakeDense  Center Point 2d = ("
 				  << center2d.x << ", " << center2d.y << ")"
 				  << std::endl;
-
 			vector<P3d<double>> templateContour =
 			    stoneContours[iterCont];
 			vector<Point> tCont2d =
 			    make2d(templateContour, denseOrientation);
-
+			int templateSize = templateContour.size();
+                        double temolateRange = 0;
+			vector<int> rangeVec = {};
+                        for (int i = 0; i < templateSize; i++) {
+				if (abs(tCont2d[i].x - center2d.x) < step) {rangeVec.push_back(tCont2d[i].y); }
+                        }
+			templateSize = rangeVec.size();
+			for(int i = 0; i < templateSize; i++) {
+				for(int j = 0; j < templateSize; j++) {
+					if (abs(rangeVec[i] - rangeVec[j]) > temolateRange) temolateRange = abs(rangeVec[i] - rangeVec[j]);
+				}
+			}
+			temolateRange /= 2;
 			int dim = findMaxDim(tCont2d);
 			Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
 			int deviation;
@@ -344,6 +355,7 @@ struct Stone3d {
 			    tmpMat, tCont2d, radOfCenter, center2d, deviation);
 			int polar2dsize = polar2d.size();
 			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
+				
 				if (thirdCoord % step != 0) continue;
 				if (thirdCoord == collapsedCoord) continue;
 				vector<P3d<double>> curCS =
@@ -352,10 +364,12 @@ struct Stone3d {
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
 				vector<PolarPoint<double>> curPolar2d = polar2d;
+				std::cout << "devi = " << deviation << std::endl;
 				vector<Point> tmpv =
-				    recoverStone(curPolar2d, center2d,
-						 maxRange / 2 - deviation);
+				    recoverStone(curPolar2d, center2d, radOfCenter/(temolateRange / (maxRange / 2)));
 				vector<P3d<double>> out = {};
+				
+				// std::cout << "range = " << (double) (temolateRange / (maxRange / 2)) <<   std::endl; 
 				int tmpvSize = tmpv.size();
 				for (int ii = 0; ii < tmpvSize; ii++) {
 					switch (denseOrientation) {
@@ -510,7 +524,7 @@ vector<PolarPoint<double>> compareWithCircle(Mat circleImg,
 		pnt.rcos = (contour[i].x - center.x) / dif_tmp;
 		pnt.rsin = (contour[i].y - center.y) / dif_tmp;
 		pnt.r = dif_tmp - r;
-		maxdev += abs(pnt.r);
+		maxdev += pnt.r;
 		difs.push_back(pnt);
 	}
 	deviation = maxdev / contsize;
@@ -732,25 +746,25 @@ void combineImgs(vector<PosedImgs> imgs) {
 
 int main(int, char** argv) {
 	Mat src = imread(argv[1]);
-	Mat front1 = imread("../im1.png");
+	Mat front1 = imread("../heart1.png");
 	if (!front1.data) {
 		std::cout << "First err!";
 		exit(-1);
 	}
-	Mat front2 = imread("../im2.png");
+	Mat front2 = imread("../heart2.png");
 	Mat front3 = imread("../im3.png");
 	// Mat front4 = imread("../im4.png");
 	vector<PosedImgs> sources = {};
 	// PosedImgs mat1(src, xOrient);
 	// sources.push_back(mat1);
-	PosedImgs mat0(front1, xOrient, 500, 0, 0);
+	PosedImgs mat0(front1, xOrient, 930, 0, 0);// 500, 0, 0);
 	// PosedImgs mat1(front4, xOrient);
-	PosedImgs mat2(front2, yOrient, -1200, 1700, 0);
+	PosedImgs mat2(front2, yOrient,  0, 955, 0); //-1200, 1700, 0);
 	PosedImgs mat3(front3, yOrient, 0, 550, 0);
 	sources.push_back(mat0);
 	// sources.push_back(mat1);
 	sources.push_back(mat2);
-	sources.push_back(mat3);
+	//sources.push_back(mat3);
 	combineImgs(sources);
 	waitKey(0);
 	return 0;
