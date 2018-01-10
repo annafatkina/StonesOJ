@@ -1,7 +1,7 @@
 project (undistorted)
 cmake_minimum_required(VERSION 3.3)
 set(CMAKE_CXX_STANDARD 11)
-#set(CMAKE_CXX_FLAGS "-fpermissive")
+set(CMAKE_CXX_FLAGS "-Ofast -march=native -ffast-math -m64 -flto")
 
 set(SRCFILES
 	ami_image_draw/image_draw.h

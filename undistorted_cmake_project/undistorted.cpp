@@ -150,8 +150,12 @@ struct UndistortEngine {
 	}
 };
 
+int counter = 0;
+int max_frames = 1000000;
+int train_every = 30;
 void process_frame(Mat src, Mat& dst, UndistortEngineSettings& settings, UndistortEngine& ue, bool needToTrain)
 {
+	counter++;
 	Mat current = src.clone();
 	fastNlMeansDenoisingColored(current, current);
 
@@ -178,6 +182,7 @@ void process_frame(Mat src, Mat& dst, UndistortEngineSettings& settings, Undisto
 			current = ue.ApplyModel(current);
 			auto dt = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() - t).count();
 			cout << "distortion model applied in " << dt << "ms." <<  endl;
+			//imwrite("frame_"+std::to_string(counter)+".jpg", current);
 			dst = current.clone();
 	};
 	show();
@@ -202,9 +207,10 @@ int main(int argc, char* argv[]) {
 	auto reader = VideoCapture(input_video_path);
 	
 	auto codec = CV_FOURCC('X', 'V', 'I', 'D');
+	
 	auto fps = 30.0;
 	Size output_video_size;
-	output_video_size = Size(625, 500);
+	output_video_size = Size(reader.get(CV_CAP_PROP_FRAME_WIDTH), reader.get(CV_CAP_PROP_FRAME_HEIGHT));
 	auto writer = VideoWriter(output_video_path, codec, fps, output_video_size, true);
 
 	UndistortEngineSettings settings;
@@ -212,8 +218,8 @@ int main(int argc, char* argv[]) {
         bool needToTrain = true;
 	int counter = 0;
 
-	while (reader.read(current_image)) {
-		if (counter % 300 == 0) {
+	while (reader.read(current_image) && counter <= max_frames) {
+		if (counter % train_every == 0) {
 			needToTrain = true;
 		}
 		else {
@@ -222,7 +228,7 @@ int main(int argc, char* argv[]) {
 		
 		Mat undistorted_image;
 		process_frame(current_image.clone(), undistorted_image, settings, ue, needToTrain);
-		writer.write(undistorted_image);
+		writer.write(undistorted_image.clone());
 		counter++;
 	}
 	writer.release();	
