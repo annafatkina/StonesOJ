@@ -83,8 +83,7 @@ int main(int argc, char* argv[]) {
     // Optional: delete points with an unoriented normal
     // if you plan to call a reconstruction algorithm that expects oriented normals.
     points.erase(unoriented_points_begin, points.end());
-    
-
+    std::cout << points.size() << std::endl;
     Polyhedron output_mesh;
   
     double average_spacing = CGAL::compute_average_spacing<CGAL::Sequential_tag>
@@ -95,7 +94,7 @@ int main(int argc, char* argv[]) {
          CGAL::Second_of_pair_property_map<PointVectorPair>(),
          output_mesh, average_spacing))
       {
-
+	  //output_mesh.inside_out();
 	  Surface_mesh mesh_out;
           CGAL::copy_face_graph(output_mesh, mesh_out);
 

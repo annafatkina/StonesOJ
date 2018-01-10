@@ -17,11 +17,5 @@ if(NOT TensorflowCC_Shared_FOUND)
   return()
 endif()
 
-#PCL
-find_package(PCL 1.2 REQUIRED)
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
 add_executable (prototype prototype.cpp)
-target_link_libraries(prototype ${OpenCV_LIBS} TensorflowCC::Shared ${PCL_LIBRARIES})
+target_link_libraries(prototype ${OpenCV_LIBS} TensorflowCC::Shared)
