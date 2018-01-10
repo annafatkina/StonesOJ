@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_3865a/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3865a.dir/build.make CMakeFiles/cmTC_3865a.dir/build
+make[1]: вход в каталог «/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp»
+Building C object CMakeFiles/cmTC_3865a.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -Wall  -O3 -march=native     -o CMakeFiles/cmTC_3865a.dir/CheckSymbolExists.c.o   -c /home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_3865a
+/home/dmitry/CLion/clion-2017.2.3/bin/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3865a.dir/link.txt --verbose=1
+/usr/bin/cc   -Wall  -O3 -march=native      -rdynamic CMakeFiles/cmTC_3865a.dir/CheckSymbolExists.c.o  -o cmTC_3865a 
+CMakeFiles/cmTC_3865a.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text.startup+0x6): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_3865a.dir/build.make:97: ошибка выполнения рецепта для цели «cmTC_3865a»
+make[1]: *** [cmTC_3865a] Ошибка 1
+make[1]: выход из каталога «/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp»
+Makefile:126: ошибка выполнения рецепта для цели «cmTC_3865a/fast»
+make: *** [cmTC_3865a/fast] Ошибка 2
+
+File /home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_58f5a/fast"
+/usr/bin/make -f CMakeFiles/cmTC_58f5a.dir/build.make CMakeFiles/cmTC_58f5a.dir/build
+make[1]: вход в каталог «/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp»
+Building C object CMakeFiles/cmTC_58f5a.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -Wall  -O3 -march=native  -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_58f5a.dir/CheckFunctionExists.c.o   -c /home/dmitry/CLion/clion-2017.2.3/bin/cmake/share/cmake-3.8/Modules/CheckFunctionExists.c
+Linking C executable cmTC_58f5a
+/home/dmitry/CLion/clion-2017.2.3/bin/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_58f5a.dir/link.txt --verbose=1
+/usr/bin/cc   -Wall  -O3 -march=native  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_58f5a.dir/CheckFunctionExists.c.o  -o cmTC_58f5a -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_58f5a.dir/build.make:97: ошибка выполнения рецепта для цели «cmTC_58f5a»
+make[1]: *** [cmTC_58f5a] Ошибка 1
+make[1]: выход из каталога «/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/CMakeFiles/CMakeTmp»
+Makefile:126: ошибка выполнения рецепта для цели «cmTC_58f5a/fast»
+make: *** [cmTC_58f5a/fast] Ошибка 2
+
+

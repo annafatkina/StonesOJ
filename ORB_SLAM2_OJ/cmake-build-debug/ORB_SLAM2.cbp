@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="ORB_SLAM2"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\local\;CMake Files\..\..\..\..\usr\local\share\;CMake Files\..\..\..\..\usr\local\share\OpenCV\;CMake Files\..\..\..\..\usr\local\share\pcl-1.8\;CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\;CMake Files\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\usr\local\lib\cmake\Pangolin\;CMake Files\..\..\..\..\usr\lib\;CMake Files\..\..\..\..\usr\lib\vtk-5.10\;CMake Files\..\..\..\..\usr\lib\vtk-5.10\CMake\;CMake Files\cmake_modules\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="slam">
+				<Option output="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/slam" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DDISABLE_OPENNI"/>
+					<Add option="-DDISABLE_OPENNI2"/>
+					<Add option="-DDISABLE_ENSENSO"/>
+					<Add option="-DDISABLE_DAVIDSDK"/>
+					<Add option="-DDISABLE_DSSDK"/>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DDISABLE_LIBUSB_1_0"/>
+					<Add option="-DDISABLE_RSSDK"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/DBoW2"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/g2o"/>
+					<Add directory="/usr/include/vtk-5.10"/>
+					<Add directory="/usr/local/include/pcl-1.8"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 slam"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="slam/fast">
+				<Option output="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/slam" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DDISABLE_OPENNI"/>
+					<Add option="-DDISABLE_OPENNI2"/>
+					<Add option="-DDISABLE_ENSENSO"/>
+					<Add option="-DDISABLE_DAVIDSDK"/>
+					<Add option="-DDISABLE_DSSDK"/>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DDISABLE_LIBUSB_1_0"/>
+					<Add option="-DDISABLE_RSSDK"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/DBoW2"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/g2o"/>
+					<Add directory="/usr/include/vtk-5.10"/>
+					<Add directory="/usr/local/include/pcl-1.8"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 slam/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ORB_SLAM2">
+				<Option output="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/lib/libORB_SLAM2.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DDISABLE_OPENNI"/>
+					<Add option="-DDISABLE_OPENNI2"/>
+					<Add option="-DDISABLE_ENSENSO"/>
+					<Add option="-DDISABLE_DAVIDSDK"/>
+					<Add option="-DDISABLE_DSSDK"/>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DDISABLE_LIBUSB_1_0"/>
+					<Add option="-DDISABLE_RSSDK"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/DBoW2"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/g2o"/>
+					<Add directory="/usr/include/vtk-5.10"/>
+					<Add directory="/usr/local/include/pcl-1.8"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 ORB_SLAM2"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ORB_SLAM2/fast">
+				<Option output="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/lib/libORB_SLAM2.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DDISABLE_OPENNI"/>
+					<Add option="-DDISABLE_OPENNI2"/>
+					<Add option="-DDISABLE_ENSENSO"/>
+					<Add option="-DDISABLE_DAVIDSDK"/>
+					<Add option="-DDISABLE_DSSDK"/>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DDISABLE_LIBUSB_1_0"/>
+					<Add option="-DDISABLE_RSSDK"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/DBoW2"/>
+					<Add directory="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/Thirdparty/g2o"/>
+					<Add directory="/usr/include/vtk-5.10"/>
+					<Add directory="/usr/local/include/pcl-1.8"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 ORB_SLAM2/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Converter.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Frame.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Initializer.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/KeyFrame.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/KeyFrameDatabase.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/LocalMapping.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/LoopClosing.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Map.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/MapPoint.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/ORBVocabulary.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/ORBextractor.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/ORBmatcher.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Optimizer.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/PnPsolver.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Settings.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Sim3Solver.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/System.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/include/Tracking.h">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/slam.cpp">
+			<Option target="slam"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Converter.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Frame.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Initializer.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/KeyFrame.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/KeyFrameDatabase.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/LocalMapping.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/LoopClosing.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Map.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/MapPoint.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/ORBextractor.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/ORBmatcher.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Optimizer.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/PnPsolver.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Sim3Solver.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/src/Tracking.cc">
+			<Option target="ORB_SLAM2"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/PCLConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/PCLConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindEigen.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindFLANN.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindFLANN.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindQhull.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindOpenNI.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindOpenNI2.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindEnsenso.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FinddavidSDK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindDSSDK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindOpenNI.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindOpenNI2.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindEnsenso.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FinddavidSDK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindDSSDK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/share/pcl-1.8/Modules/FindRSSDK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\pcl-1.8\Modules\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/lib/cmake/Pangolin/PangolinConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/lib/cmake/Pangolin/PangolinConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/lib/cmake/Pangolin/PangolinTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/local/lib/cmake/Pangolin/PangolinTargets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKTargets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/../../../../usr/lib/vtk-5.10/CMake/vtkMakeInstantiator.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.10\CMake\"/>
+		</Unit>
+		<Unit filename="/home/dmitry/prototype-docker/ORB_SLAM2_OJ/cmake_modules/FindEigen3.cmake">
+			<Option virtualFolder="CMake Files\cmake_modules\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
