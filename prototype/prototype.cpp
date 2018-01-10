@@ -48,7 +48,7 @@ std::mutex _lock;
 std::atomic<bool> reading_done(false);
 std::atomic<bool> processing_done(false);
 std::atomic<bool> need_resize(false);
-
+bool isColor = true;
 
 void process_image(Session* session, Mat img, Mat& result, Mat& depth_mat) {
 	
@@ -115,7 +115,12 @@ void process_image(Session* session, Mat img, Mat& result, Mat& depth_mat) {
 		cv::resize(ColorsMap, ColorsMap, Size(625, 500), 0, 0, CV_INTER_CUBIC);
 	}
 	
-	result = ColorsMap.clone();
+	if (isColor) {
+		result = ColorsMap.clone();
+	}
+	else {
+		result = adjMap.clone();
+	}
 }
 
 void readingThread(VideoCapture& reader, queue<shared_ptr<vector<Mat>>>& processingQueue) {
@@ -350,7 +355,7 @@ int main(int argc, char* argv[]) {
 		output_video_size = Size(160, 128);
 	}
 
-	auto writer = VideoWriter(output_video_path, codec, fps, output_video_size, true);
+	auto writer = VideoWriter(output_video_path, codec, fps, output_video_size, isColor);
 
 
     	//creating queues
