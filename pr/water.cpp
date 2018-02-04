@@ -16,6 +16,11 @@ using namespace cv;
 
 enum Orientation { xOrient, yOrient, zOrient };
 
+vector<Point> makefullcont(vector<Point> in, int step = 1);
+int findMaxDim(vector<Point> in);
+
+
+
 // TODO: remake to avoid extra copies!!!
 /**
 *	Wrapper for for polar coordinates points
@@ -55,16 +60,51 @@ Point findContCenter(vector<Point> contour) {
 	return mc;
 }
 
-template <typename T>
+/**
+*	Recovers contour by data of compared circle and
+*	defference from this.
+*/
+
+vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone,
+						   Point center, double r,
+						   Mat recStone = Mat::zeros(0, 0, CV_32SC1));
+
+
+/**
+*	Find an array of difference between input cintour
+*	and circle radius of r with center placed in the
+*	center of given contour.
+*	Output also saves an information of sines and
+*	cosines of every point of contour (have to be
+*	saved to have a recovery oppotunity).
+*/
+vector<PolarPoint<double>> compareWithCircle(Mat circleImg,
+											 vector<Point> contour, double r,
+											 Point center, int& deviation);
+
+
+//template <typename T>
 struct StoneContourPlane {
-	vector<T> contour;
+	vector<Point> contour;
 	Orientation orient;
 	Point center;
 	int xShift, yShift, zShift;
+
 	StoneContourPlane() : xShift(0), yShift(0), zShift(0) { contour = {}; }
+
 	Point getCenter() {
 		center = findContCenter(contour);
 		return center;
+	}
+
+        void resize (double scale, double r) {
+			int dim = findMaxDim(contour);
+            Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
+            int deviation;
+		    Point center = findContCenter(contour);
+			vector<PolarPoint<double>> polar2d = compareWithCircle(
+                            tmpMat, contour , r, center, deviation);
+			contour = recoverStone(polar2d, center, r*scale);
 	}
 	vector<P3d<double>> get3dContour() {
 		int n = contour.size();
@@ -125,28 +165,9 @@ vector<Point> make2d(vector<P3d<double>> contour3d, Orientation orient) {
 	return res;
 }
 
-vector<Point> makefullcont(vector<Point> in, int step = 1);
-int findMaxDim(vector<Point> in);
-/**
-*	Find an array of difference between input cintour
-*	and circle radius of r with center placed in the
-*	center of given contour.
-*	Output also saves an information of sines and
-*	cosines of every point of contour (have to be
-*	saved to have a recovery oppotunity).
-*/
-vector<PolarPoint<double>> compareWithCircle(Mat circleImg,
-					     vector<Point> contour, double r,
-					     Point center, int& deviation);
 
-/**
-*	Recovers contour by data of compared circle and
-*	defference from this.
-*/
 
-vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone,
-			   Point center, double r,
-			   Mat recStone = Mat::zeros(0, 0, CV_32SC1));
+
 
 template <typename T>
 T signum(T in) {
@@ -351,7 +372,7 @@ struct Stone3d {
 			Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
 			int deviation;
 
-			vector<PolarPoint<double>> polar2d = compareWithCircle(
+			vector<PolarPoint<double>> polar2d =compareWithCircle(
 			    tmpMat, tCont2d, radOfCenter, center2d, deviation);
 			int polar2dsize = polar2d.size();
 			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
@@ -633,17 +654,32 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 struct PosedImgs {
 	Mat img;
 	int beginX, beginY, beginZ;
+        double scale;
 	Orientation orient;
-
+    void resize() {
+		Mat out = img.clone();
+        std::cout << "resize!" << std::endl;
+        cv::resize(img, out, Size(img.rows*scale, img.cols*scale));
+        img = out.clone();
+        imshow("not resized",
+               img * 10000);
+	}
 	PosedImgs(Mat in, Orientation orIn)
-	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0) {}
+	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(1.0) {}
 	PosedImgs(Mat in, Orientation orIn, int x, int y, int z)
-	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z) {}
-
+	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(1.0) {}
+	PosedImgs(Mat in, Orientation orIn, double sc)
+	    : img(in), orient(orIn), scale(sc) {
+		resize();
+	}
+	PosedImgs(Mat in, Orientation orIn, int x, int y, int z, double sc)
+	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(sc) {
+		resize();
+	}
 	Mat getMat() { return img; }
 };
 
-void addToStones(StoneContourPlane<Point> cont,
+void addToStones(StoneContourPlane cont,
 		 shared_ptr<vector<Stone3d<double>>> stoneVec, int rad) {
 	int nStoneVec = stoneVec->size();
 	// cont.center;
@@ -722,15 +758,23 @@ void combineImgs(vector<PosedImgs> imgs) {
 			shared_ptr<vector<double>> outptr =
 			    make_shared<vector<double>>();
 			int si = extractRFromPP(outptr, difs);
-
+			imshow("not resized" + to_string(i),
+				   markers_tmp * 10000);
 			vector<double>& outvec = *outptr;
 			int outs = si;
-			StoneContourPlane<Point> important;
+			StoneContourPlane important;
 			important.orient = imgs[k].orient;
 			important.xShift = imgs[k].beginX;
 			important.yShift = imgs[k].beginY;
 			important.zShift = imgs[k].beginZ;
 			important.contour = contours[i];
+//			important.resize(imgs[k].scale, r);
+			//contours[i] = important.contour;
+			/*drawContours(markers, contours, static_cast<int>(i),
+						 Scalar::all(static_cast<int>(i) + 1), -1);
+			markers_tmp = markers.clone();
+			imshow("resized" + to_string(i),
+				   markers_tmp * 10000);*/
 			addToStones(important, stone3dVecPtr, r);
 		}
 	}
@@ -757,9 +801,9 @@ int main(int, char** argv) {
 	vector<PosedImgs> sources = {};
 	// PosedImgs mat1(src, xOrient);
 	// sources.push_back(mat1);
-	PosedImgs mat0(front1, xOrient, 930, 0, 0);// 500, 0, 0);
+	PosedImgs mat0(front1, xOrient, 930, 0, 0, 0.5);// 500, 0, 0);
 	// PosedImgs mat1(front4, xOrient);
-	PosedImgs mat2(front2, yOrient,  0, 955, 0); //-1200, 1700, 0);
+	PosedImgs mat2(front2, yOrient,  0, 955, 0, 0.5); //-1200, 1700, 0);
 	PosedImgs mat3(front3, yOrient, 0, 550, 0);
 	sources.push_back(mat0);
 	// sources.push_back(mat1);
