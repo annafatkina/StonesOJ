@@ -97,15 +97,6 @@ struct StoneContourPlane {
 		return center;
 	}
 
-        void resize (double scale, double r) {
-			int dim = findMaxDim(contour);
-            Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
-            int deviation;
-		    Point center = findContCenter(contour);
-			vector<PolarPoint<double>> polar2d = compareWithCircle(
-                            tmpMat, contour , r, center, deviation);
-			contour = recoverStone(polar2d, center, r*scale);
-	}
 	vector<P3d<double>> get3dContour() {
 		int n = contour.size();
 		vector<P3d<double>> res = {};
@@ -375,17 +366,18 @@ struct Stone3d {
 			vector<PolarPoint<double>> polar2d =compareWithCircle(
 			    tmpMat, tCont2d, radOfCenter, center2d, deviation);
 			int polar2dsize = polar2d.size();
+            std::cout << "collaps " << collapsedCoord << std::endl;
 			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
 				
 				if (thirdCoord % step != 0) continue;
-				if (thirdCoord == collapsedCoord) continue;
+				if (abs(thirdCoord - collapsedCoord) < step) continue;
 				vector<P3d<double>> curCS =
 				    crossSection(thirdCoord, denseOrientation, step);
 				double maxRange = GetContRange(
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
 				vector<PolarPoint<double>> curPolar2d = polar2d;
-				std::cout << "devi = " << deviation << std::endl;
+				//std::cout << thirdCoord <<" recovs = " << radOfCenter/(temolateRange / (maxRange / 2)) << " maxrang = "  << maxRange << std::endl;
 				vector<Point> tmpv =
 				    recoverStone(curPolar2d, center2d, radOfCenter/(temolateRange / (maxRange / 2)));
 				vector<P3d<double>> out = {};
@@ -656,25 +648,28 @@ struct PosedImgs {
 	int beginX, beginY, beginZ;
         double scale;
 	Orientation orient;
-    void resize() {
-		Mat out = img.clone();
+    void imgresize() {
+        std::cout << "img.size: " << img.cols << " " << img.cols << std::endl;
+        Mat out;
         std::cout << "resize!" << std::endl;
-        cv::resize(img, out, Size(img.rows*scale, img.cols*scale));
+        cv::resize(img, out, Size(), scale, scale);
         img = out.clone();
-        imshow("not resized",
-               img * 10000);
+        beginX *= scale;
+        beginY *= scale;
+        beginZ *= scale;
+        std::cout << "img.size: " << img.cols << " " << img.cols << std::endl;
 	}
 	PosedImgs(Mat in, Orientation orIn)
 	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(1.0) {}
 	PosedImgs(Mat in, Orientation orIn, int x, int y, int z)
 	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(1.0) {}
 	PosedImgs(Mat in, Orientation orIn, double sc)
-	    : img(in), orient(orIn), scale(sc) {
-		resize();
+	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(sc) {
+		imgresize();
 	}
 	PosedImgs(Mat in, Orientation orIn, int x, int y, int z, double sc)
 	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(sc) {
-		resize();
+		imgresize();
 	}
 	Mat getMat() { return img; }
 };
@@ -768,13 +763,6 @@ void combineImgs(vector<PosedImgs> imgs) {
 			important.yShift = imgs[k].beginY;
 			important.zShift = imgs[k].beginZ;
 			important.contour = contours[i];
-//			important.resize(imgs[k].scale, r);
-			//contours[i] = important.contour;
-			/*drawContours(markers, contours, static_cast<int>(i),
-						 Scalar::all(static_cast<int>(i) + 1), -1);
-			markers_tmp = markers.clone();
-			imshow("resized" + to_string(i),
-				   markers_tmp * 10000);*/
 			addToStones(important, stone3dVecPtr, r);
 		}
 	}
@@ -804,7 +792,7 @@ int main(int, char** argv) {
 	PosedImgs mat0(front1, xOrient, 930, 0, 0, 0.5);// 500, 0, 0);
 	// PosedImgs mat1(front4, xOrient);
 	PosedImgs mat2(front2, yOrient,  0, 955, 0, 0.5); //-1200, 1700, 0);
-	PosedImgs mat3(front3, yOrient, 0, 550, 0);
+	//PosedImgs mat3(front3, yOrient, 0, 550, 0, 0.3);
 	sources.push_back(mat0);
 	// sources.push_back(mat1);
 	sources.push_back(mat2);
