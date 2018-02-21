@@ -377,12 +377,12 @@ struct Stone3d {
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
 				vector<PolarPoint<double>> curPolar2d = polar2d;
-				//std::cout << thirdCoord <<" recovs = " << radOfCenter/(temolateRange / (maxRange / 2)) << " maxrang = "  << maxRange << std::endl;
+			std::cout << thirdCoord <<" recovs = " << radOfCenter/(temolateRange / (maxRange / 2)) << " maxrang = "  << maxRange << std::endl;
 				vector<Point> tmpv =
 				    recoverStone(curPolar2d, center2d, radOfCenter/(temolateRange / (maxRange / 2)));
 				vector<P3d<double>> out = {};
 				
-				// std::cout << "range = " << (double) (temolateRange / (maxRange / 2)) <<   std::endl; 
+			std::cout << "range = " << (double) (temolateRange / (maxRange / 2)) <<   std::endl; 
 				int tmpvSize = tmpv.size();
 				for (int ii = 0; ii < tmpvSize; ii++) {
 					switch (denseOrientation) {
@@ -649,7 +649,7 @@ struct PosedImgs {
         double scale;
 	Orientation orient;
     void imgresize() {
-        std::cout << "img.size: " << img.cols << " " << img.cols << std::endl;
+        std::cout << "img.size: " << img.cols << " " << img.rows << std::endl;
         Mat out;
         std::cout << "resize!" << std::endl;
         cv::resize(img, out, Size(), scale, scale);
@@ -657,7 +657,7 @@ struct PosedImgs {
         beginX *= scale;
         beginY *= scale;
         beginZ *= scale;
-        std::cout << "img.size: " << img.cols << " " << img.cols << std::endl;
+        std::cout << "img.size: " << img.cols << " " << img.rows << std::endl;
 	}
 	PosedImgs(Mat in, Orientation orIn)
 	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(1.0) {}
@@ -753,8 +753,8 @@ void combineImgs(vector<PosedImgs> imgs) {
 			shared_ptr<vector<double>> outptr =
 			    make_shared<vector<double>>();
 			int si = extractRFromPP(outptr, difs);
-			imshow("not resized" + to_string(i),
-				   markers_tmp * 10000);
+			//imshow("not resized" + to_string(i),
+			//	   markers_tmp * 10000);
 			vector<double>& outvec = *outptr;
 			int outs = si;
 			StoneContourPlane important;
@@ -774,30 +774,44 @@ void combineImgs(vector<PosedImgs> imgs) {
 	for (int st = 0; st < st3dsize; st++) {
 		stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
 	}
+	std::cout << "Im finished!" << std::endl;
 }
 
+/*void devider(vector<Mat> input_imgs) {
+	for(auto img : input_imgs) {
+		img
+	}
+} */
+
+
 int main(int, char** argv) {
-	Mat src = imread(argv[1]);
-	Mat front1 = imread("../heart1.png");
-	if (!front1.data) {
+	
+	//Mat src = imread(argv[1]);
+	Mat front1 = imread(argv[1]);
+/*	if (!front1.data) {
 		std::cout << "First err!";
 		exit(-1);
-	}
-	Mat front2 = imread("../heart2.png");
-	Mat front3 = imread("../im3.png");
+	}*/
+	Mat front2 = imread(argv[2]);
+	//Mat front3 = imread(argv[3]);
+	float scale = atof(argv[3]);
 	// Mat front4 = imread("../im4.png");
 	vector<PosedImgs> sources = {};
 	// PosedImgs mat1(src, xOrient);
 	// sources.push_back(mat1);
-	PosedImgs mat0(front1, xOrient, 930, 0, 0, 0.5);// 500, 0, 0);
+        int tmp1 = front1.rows/2;
+        int tmp2 = front2.rows/2;
+        std::cout << "sizes: " << front1.rows << " " << front2.cols << std::endl;
+	PosedImgs mat0(front1, xOrient, tmp1,  0, 0, scale);// 500, 0, 0);
 	// PosedImgs mat1(front4, xOrient);
-	PosedImgs mat2(front2, yOrient,  0, 955, 0, 0.5); //-1200, 1700, 0);
+	PosedImgs mat2(front2, yOrient, 0, tmp2, 0, scale); //-1200, 1700, 0);
 	//PosedImgs mat3(front3, yOrient, 0, 550, 0, 0.3);
 	sources.push_back(mat0);
 	// sources.push_back(mat1);
 	sources.push_back(mat2);
 	//sources.push_back(mat3);
 	combineImgs(sources);
+	std::cout << "Im in the end of main" << std::endl;
 	waitKey(0);
 	return 0;
 }

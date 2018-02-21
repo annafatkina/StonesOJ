@@ -58,12 +58,12 @@ int main( int argc, char** argv )
         return 0;
     }
     help();
-    namedWindow( "image", 1 );
+    //namedWindow( "image", 1 );
     img0.copyTo(img);
     cvtColor(img, markerMask, COLOR_BGR2GRAY);
     cvtColor(markerMask, imgGray, COLOR_GRAY2BGR);
     markerMask = Scalar::all(0);
-    imshow( "image", img );
+    //imshow( "image", img );
     setMouseCallback( "image", onMouse, 0 );
     for(;;)
     {
@@ -119,7 +119,7 @@ int main( int argc, char** argv )
                         wshed.at<Vec3b>(i,j) = colorTab[index - 1];
                 }
             wshed = wshed*0.5 + imgGray*0.5;
-            imshow( "watershed transform", wshed );
+            //imshow( "watershed transform", wshed );
 	    //imwrite("im.jpg", wshed);
         }
     }
