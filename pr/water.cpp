@@ -777,11 +777,61 @@ void combineImgs(vector<PosedImgs> imgs) {
 	std::cout << "Im finished!" << std::endl;
 }
 
-/*void devider(vector<Mat> input_imgs) {
+void devider(vector<Mat> input_imgs) {
 	for(auto img : input_imgs) {
-		img
+	//	watershed(img, markers);
+	//	Mat mark = Mat::zeros(markers.size(), CV_8UC1);
+    	//	markers.convertTo(mark, CV_8UC1);
+    //		bitwise_not(mark, mark);
+    //		imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+    // image looks like at that point
+    // Generate random colors
+    //		vector<Vec3b> colors;
+    //		for (size_t i = 0; i < contours.size(); i++) {
+    //			int b = theRNG().uniform(0, 255);
+    //			int g = theRNG().uniform(0, 255);
+  	//	 	int r = theRNG().uniform(0, 255);
+    	//		colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+    	//	}
+    // Create the result image
+    	//	Mat dst = Mat::zeros(markers.size(), CV_8UC3);
+    // Fill labeled objects with random colors
+    //std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
+    //std::cout << colors.size();
+    //    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
+    //  std::cout << "squares = " << squares << std::endl;
+    		int ttt = 0;
+    		for (int i = 0; i < markers.rows; i++) {
+    			for (int j = 0; j < markers.cols; j++) {
+    				int index = markers.at<int>(i,j);
+    				if (index > 0 && index <= static_cast<int>(contours.size())) {
+    					dst.at<Vec3b>(i,j) = colors[index-1];
+    //squares.at<double>(index-1) += 1.0;
+    					ttt +=1;
+   				}
+    				else {
+    				dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
+    //squares.at<int>(0) += 1;
+    				ttt +=1;
+   				 }
+    			}
+    		}
+    		std::cout << "ttt = " << ttt << std::endl;
+		int tm=0;
+    		imshow("Final Result", dst);
+    		src = dst;
+    		for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) { // iterate through each contour.
+    			Rect r= boundingRect(contours[i]);
+    //std::cout << contours[i] << std::endl;
+    			std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
+    			if(hierarchy[i][2]<0) //Check if there is a child contour
+    				rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,0,255),2,8,0); //Opened contour
+    			else
+    				rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,255,0),2,8,0); //closed contour
+    		}
+    		//imshow("Final final Result", src);		
 	}
-} */
+} 
 
 
 int main(int, char** argv) {
