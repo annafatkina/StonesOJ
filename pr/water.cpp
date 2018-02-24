@@ -19,8 +19,6 @@ enum Orientation { xOrient, yOrient, zOrient };
 vector<Point> makefullcont(vector<Point> in, int step = 1);
 int findMaxDim(vector<Point> in);
 
-
-
 // TODO: remake to avoid extra copies!!!
 /**
 *	Wrapper for for polar coordinates points
@@ -66,9 +64,8 @@ Point findContCenter(vector<Point> contour) {
 */
 
 vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone,
-						   Point center, double r,
-						   Mat recStone = Mat::zeros(0, 0, CV_32SC1));
-
+			   Point center, double r,
+			   Mat recStone = Mat::zeros(0, 0, CV_32SC1));
 
 /**
 *	Find an array of difference between input cintour
@@ -79,11 +76,10 @@ vector<Point> recoverStone(vector<PolarPoint<double>> vectorizedStone,
 *	saved to have a recovery oppotunity).
 */
 vector<PolarPoint<double>> compareWithCircle(Mat circleImg,
-											 vector<Point> contour, double r,
-											 Point center, int& deviation);
+					     vector<Point> contour, double r,
+					     Point center, int& deviation);
 
-
-//template <typename T>
+// template <typename T>
 struct StoneContourPlane {
 	vector<Point> contour;
 	Orientation orient;
@@ -155,10 +151,6 @@ vector<Point> make2d(vector<P3d<double>> contour3d, Orientation orient) {
 	}
 	return res;
 }
-
-
-
-
 
 template <typename T>
 T signum(T in) {
@@ -233,7 +225,8 @@ struct Stone3d {
 		}
 		ofof.close();
 	}
-	vector<P3d<double>> crossSection(int in, Orientation CSorient, int step = 1) {
+	vector<P3d<double>> crossSection(int in, Orientation CSorient,
+					 int step = 1) {
 		int upSize;
 		upSize = static_cast<int>(stoneContours.size());
 		vector<P3d<double>> out = {};
@@ -242,19 +235,22 @@ struct Stone3d {
 			for (int j = 0; j < downSize; j++) {
 				switch (CSorient) {
 					case xOrient:
-						if (abs(stoneContours[i][j].x - in) < step)
+						if (abs(stoneContours[i][j].x -
+							in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
 						break;
 					case yOrient:
-						if (abs(stoneContours[i][j].y == in) < step)
+						if (abs(stoneContours[i][j].y ==
+							in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
 						break;
 					case zOrient:
-						if (abs(stoneContours[i][j].z - in) < step)
+						if (abs(stoneContours[i][j].z -
+							in) < step)
 							out.push_back(
 							    stoneContours[i]
 									 [j]);
@@ -347,15 +343,20 @@ struct Stone3d {
 			vector<Point> tCont2d =
 			    make2d(templateContour, denseOrientation);
 			int templateSize = templateContour.size();
-                        double temolateRange = 0;
+			double temolateRange = 0;
 			vector<int> rangeVec = {};
-                        for (int i = 0; i < templateSize; i++) {
-				if (abs(tCont2d[i].x - center2d.x) < step) {rangeVec.push_back(tCont2d[i].y); }
-                        }
+			for (int i = 0; i < templateSize; i++) {
+				if (abs(tCont2d[i].x - center2d.x) < step) {
+					rangeVec.push_back(tCont2d[i].y);
+				}
+			}
 			templateSize = rangeVec.size();
-			for(int i = 0; i < templateSize; i++) {
-				for(int j = 0; j < templateSize; j++) {
-					if (abs(rangeVec[i] - rangeVec[j]) > temolateRange) temolateRange = abs(rangeVec[i] - rangeVec[j]);
+			for (int i = 0; i < templateSize; i++) {
+				for (int j = 0; j < templateSize; j++) {
+					if (abs(rangeVec[i] - rangeVec[j]) >
+					    temolateRange)
+						temolateRange = abs(
+						    rangeVec[i] - rangeVec[j]);
 				}
 			}
 			temolateRange /= 2;
@@ -363,26 +364,36 @@ struct Stone3d {
 			Mat tmpMat = Mat::zeros(dim + 1, dim + 1, CV_32SC1);
 			int deviation;
 
-			vector<PolarPoint<double>> polar2d =compareWithCircle(
+			vector<PolarPoint<double>> polar2d = compareWithCircle(
 			    tmpMat, tCont2d, radOfCenter, center2d, deviation);
 			int polar2dsize = polar2d.size();
-            std::cout << "collaps " << collapsedCoord << std::endl;
-			for (int thirdCoord = start; thirdCoord < end; thirdCoord++) {
-				
+			std::cout << "collaps " << collapsedCoord << std::endl;
+			for (int thirdCoord = start; thirdCoord < end;
+			     thirdCoord++) {
 				if (thirdCoord % step != 0) continue;
-				if (abs(thirdCoord - collapsedCoord) < step) continue;
-				vector<P3d<double>> curCS =
-				    crossSection(thirdCoord, denseOrientation, step);
+				if (abs(thirdCoord - collapsedCoord) < step)
+					continue;
+				vector<P3d<double>> curCS = crossSection(
+				    thirdCoord, denseOrientation, step);
 				double maxRange = GetContRange(
 				    curCS, denseOrientation, center2d);
 				if (maxRange <= step) continue;
 				vector<PolarPoint<double>> curPolar2d = polar2d;
-			std::cout << thirdCoord <<" recovs = " << radOfCenter/(temolateRange / (maxRange / 2)) << " maxrang = "  << maxRange << std::endl;
-				vector<Point> tmpv =
-				    recoverStone(curPolar2d, center2d, radOfCenter/(temolateRange / (maxRange / 2)));
+				std::cout
+				    << thirdCoord << " recovs = "
+				    << radOfCenter /
+					   (temolateRange / (maxRange / 2))
+				    << " maxrang = " << maxRange << std::endl;
+				vector<Point> tmpv = recoverStone(
+				    curPolar2d, center2d,
+				    radOfCenter /
+					(temolateRange / (maxRange / 2)));
 				vector<P3d<double>> out = {};
-				
-			std::cout << "range = " << (double) (temolateRange / (maxRange / 2)) <<   std::endl; 
+
+				std::cout
+				    << "range = "
+				    << (double)(temolateRange / (maxRange / 2))
+				    << std::endl;
 				int tmpvSize = tmpv.size();
 				for (int ii = 0; ii < tmpvSize; ii++) {
 					switch (denseOrientation) {
@@ -411,7 +422,8 @@ struct Stone3d {
 				}
 				stoneContours.push_back(out);
 			}
-			stoneContours.erase(stoneContours.begin(), stoneContours.begin() + numOfConts);
+			stoneContours.erase(stoneContours.begin(),
+					    stoneContours.begin() + numOfConts);
 		}
 	}
 };
@@ -460,17 +472,17 @@ vector<Point> lineP(int x0, int y0, int x1, int y1, int step) {
 	vector<Point> pointsOfLine;
 
 	int dx = abs(x1 - x0), sx = step * (x0 < x1 ? 1 : -1);
-	int dy = abs(y1 - y0), sy = step*(y0 < y1 ? 1 : -1);
+	int dy = abs(y1 - y0), sy = step * (y0 < y1 ? 1 : -1);
 
 	int err = (dx > dy ? dx : -dy) / 2, e2;
 	int counter = 0;
 	for (;;) {
-        counter++;
-        if (abs(x0 - x1) < step && abs(y0 - y1) < step) break;
+		counter++;
+		if (abs(x0 - x1) < step && abs(y0 - y1) < step) break;
 		if (counter % step != 0) {
 			continue;
 		}
-        	pointsOfLine.push_back(Point(x0, y0));
+		pointsOfLine.push_back(Point(x0, y0));
 		e2 = err;
 		if (e2 > -dx) {
 			err -= dy;
@@ -491,10 +503,9 @@ vector<Point> makefullcont(vector<Point> in, int step) {
 	int tmps = 0;
 	for (int i = 1; i < s; i++) {
 		vector<Point> tmp = {};
-		tmp = lineP(in[i - 1].x, in[i - 1].y, in[i].x, in[i].y,
-				 step);
+		tmp = lineP(in[i - 1].x, in[i - 1].y, in[i].x, in[i].y, step);
 		tmps = tmp.size();
-        	ret.push_back(in[i]);
+		ret.push_back(in[i]);
 		for (int j = 0; j < tmps; j++) {
 			ret.push_back(tmp[j]);
 		}
@@ -583,7 +594,7 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 		std::cout << "err!";
 		exit(-1);
 	}
-
+	std::cout << "src type = " << src.type() << " ";
 	// Show source image
 	for (int x = 0; x < src.rows; x++) {
 		for (int y = 0; y < src.cols; y++) {
@@ -646,29 +657,51 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 struct PosedImgs {
 	Mat img;
 	int beginX, beginY, beginZ;
-        double scale;
+	double scale;
 	Orientation orient;
-    void imgresize() {
-        std::cout << "img.size: " << img.cols << " " << img.rows << std::endl;
-        Mat out;
-        std::cout << "resize!" << std::endl;
-        cv::resize(img, out, Size(), scale, scale);
-        img = out.clone();
-        beginX *= scale;
-        beginY *= scale;
-        beginZ *= scale;
-        std::cout << "img.size: " << img.cols << " " << img.rows << std::endl;
+	void imgresize() {
+		std::cout << "img.size: " << img.cols << " " << img.rows
+			  << std::endl;
+		Mat out;
+		std::cout << "resize!" << std::endl;
+		cv::resize(img, out, Size(), scale, scale);
+		img = out.clone();
+		beginX *= scale;
+		beginY *= scale;
+		beginZ *= scale;
+		std::cout << "img.size: " << img.cols << " " << img.rows
+			  << std::endl;
 	}
 	PosedImgs(Mat in, Orientation orIn)
-	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(1.0) {}
+	    : img(in),
+	      orient(orIn),
+	      beginX(0),
+	      beginY(0),
+	      beginZ(0),
+	      scale(1.0) {}
 	PosedImgs(Mat in, Orientation orIn, int x, int y, int z)
-	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(1.0) {}
+	    : img(in),
+	      orient(orIn),
+	      beginX(x),
+	      beginY(y),
+	      beginZ(z),
+	      scale(1.0) {}
 	PosedImgs(Mat in, Orientation orIn, double sc)
-	    : img(in), orient(orIn), beginX(0), beginY(0), beginZ(0), scale(sc) {
+	    : img(in),
+	      orient(orIn),
+	      beginX(0),
+	      beginY(0),
+	      beginZ(0),
+	      scale(sc) {
 		imgresize();
 	}
 	PosedImgs(Mat in, Orientation orIn, int x, int y, int z, double sc)
-	    : img(in), orient(orIn), beginX(x), beginY(y), beginZ(z), scale(sc) {
+	    : img(in),
+	      orient(orIn),
+	      beginX(x),
+	      beginY(y),
+	      beginZ(z),
+	      scale(sc) {
 		imgresize();
 	}
 	Mat getMat() { return img; }
@@ -722,32 +755,62 @@ void addToStones(StoneContourPlane cont,
 	}
 }
 
-
-void colorchanging(Mat gray, Mat real_conts) {
-        Mat mask;// =gray.clone();
-        gray *=100;
+Mat colorchanging(Mat gray, Mat real_conts) {
+	if (!gray.data || !real_conts.data) {
+		std::cout << "Nodata";
+	}
+//	imshow("Red Result BF", gray*10000);
+	Mat mask; 
+	gray *= 100;
 	gray.convertTo(mask, real_conts.type());
-                imshow("Mask1 Result", mask);
-        Mat mask2 = real_conts.clone();
-        //mask2.setTo(cv::Scalar(255, 0, 0));
-//    cvtColor(mask2, mask2, CV_BGR2GRAY);
-   
-//    cvtColor(mask, mask, CV_BGR2GRAY);
-        Mat blue = real_conts.clone();
-    cvtColor(mask2, mask2, CV_BGR2GRAY);
-
+	Mat mask2 = real_conts.clone();
+	cvtColor(mask2, mask2, CV_BGR2GRAY);
 	bitwise_not(mask2, mask2);
-//	blue.setTo(cv::Scalar(255, 0, 0));
-        imshow("blue Result", blue);
-        imshow("mask Result", mask);
-        imshow("mask2 Result", mask2);
-
-    //    inRange(mask2, cv::Scalar(0,0, 0), cv::Scalar(0,0, 0), mask);
-	mask.copyTo(blue, mask2);
-        imshow("Red Result", blue);
-	gray = blue;
+	mask.copyTo(gray, mask2);
+	imshow("Red Result", gray);
+	return gray;
 }
 
+void img_cutter(Mat input_mat) {  //, vector<Mat> &output_vec) {
+	vector<vector<Point>> contours = extractContFromImg(input_mat);
+	Mat markers = Mat::zeros(input_mat.size(), CV_32SC1);
+	int conts_size = contours.size();
+
+	for (int i = 0; i < conts_size; i++) {
+		drawContours(markers, contours, static_cast<int>(i),
+			     Scalar::all(static_cast<int>(i) + 1), -1);
+	//	imshow("cutter beforeooooo", markers);
+	//	markers *= 100;
+		markers = colorchanging(markers, input_mat);
+
+		Mat m2;
+		imshow("cutter before", markers);
+		//std::cout << "mat " << std::endl << markers << std::endl; 
+		//markers /= 180;
+		markers.convertTo(markers, CV_32F);
+		markers /=1000.0;
+		imshow("cutter after", markers);
+		
+		//std::cout << "mat " << std::endl << markers << std::endl; 
+		cvtColor(markers, m2, CV_GRAY2BGR, 3);
+		std::cout << "mark type = " << markers.type()
+			  << " m2 type = " << m2.type();
+
+		std::cout << "mat " << std::endl << m2 << std::endl; 
+		if (!m2.data) {
+			std::cout << "Nodata";
+		}
+		vector<vector<Point>> new_contours = extractContFromImg(m2);
+		conts_size = contours.size();
+
+		for (int i = 0; i < conts_size; i++) {
+			drawContours(m2, new_contours, static_cast<int>(i),
+				     Scalar::all(static_cast<int>(i) + 1), -1);
+		}
+		imshow("cutter", m2);
+		std::cout << "cont szi " << conts_size;
+	}
+}
 
 void combineImgs(vector<PosedImgs> imgs) {
 	int imgscount = imgs.size();
@@ -755,7 +818,8 @@ void combineImgs(vector<PosedImgs> imgs) {
 	    make_shared<vector<Stone3d<double>>>();
 	for (int k = 0; k < imgscount; k++) {
 		Mat src(imgs[k].getMat());
-		vector<vector<Point>> contours = extractContFromImg(src);
+		img_cutter(src);
+/*		vector<vector<Point>> contours = extractContFromImg(src);
 		Mat markers = Mat::zeros(src.size(), CV_32SC1);
 		Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
 		Mat markers_tmp;
@@ -797,8 +861,8 @@ void combineImgs(vector<PosedImgs> imgs) {
 			important.contour = contours[i];
 			addToStones(important, stone3dVecPtr, r);
 		}
-	}
-	vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
+*/	}
+/*	vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
 	int st3dsize = stone3dVec.size();
 	for (int st = 0; st < st3dsize; st++) {
 		stone3dVec[st].makeDense(5);
@@ -806,148 +870,147 @@ void combineImgs(vector<PosedImgs> imgs) {
 	for (int st = 0; st < st3dsize; st++) {
 		stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
 	}
-	std::cout << "Im finished!" << std::endl;
+*/ std::cout
+    << "Im finished!" << std::endl;
 }
-/*
-void colorchanging(Mat src) {
-	Mat mask = src.clone();
-	mask.setTo(cv::Scalar(255, 0, 0));
-        src.setTo(cv::Scalar(255,255, 255), mask);
-	imshow("Red Result", mask);
-}*/
-
 
 void devider(vector<Mat> input_imgs) {
-	for(auto src : input_imgs) {
-		    for( int x = 0; x < src.rows; x++ ) {
-      for( int y = 0; y < src.cols; y++ ) {
-          if ( src.at<Vec3b>(x, y) == Vec3b(255,255,255) ) {
-            src.at<Vec3b>(x, y)[0] = 0;
-            src.at<Vec3b>(x, y)[1] = 0;
-            src.at<Vec3b>(x, y)[2] = 0;
-          }
-        }
-    }
-    //colorchanging(src);
-    // Show output image
-    imshow("Black Background Image", src);
-    // Create a kernel that we will use for accuting/sharpening our image
-    Mat kernel = (Mat_<float>(3,3) <<
-            1,  1, 1,
-            1, -8, 1,
-            1,  1, 1); // an approximation of second derivative, a quite strong kernel
-    // do the laplacian filtering as it is
-    // well, we need to convert everything in something more deeper then CV_8U
-    // because the kernel has some negative values,
-    // and we can expect in general to have a Laplacian image with negative values
-    // BUT a 8bits unsigned int (the one we are working with) can contain values from 0 to 255
-    // so the possible negative number will be truncated
-    Mat imgLaplacian;
-    Mat sharp = src; // copy source image to another temporary one
-    filter2D(sharp, imgLaplacian, CV_32F, kernel);
-    src.convertTo(sharp, CV_32F);
-    Mat imgResult = sharp - imgLaplacian;
-    // convert back to 8bits gray scale
-    imgResult.convertTo(imgResult, CV_8UC3);
-    imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
-    // imshow( "Laplace Filtered Image", imgLaplacian );
-    imshow( "New Sharped Image", imgResult );
-    // Create binary image from source image
-    Mat bw;
-    cvtColor(src, bw, CV_BGR2GRAY);
-    threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-    imshow("Binary Image", bw);
-    // Perform the distance transform algorithm
-    Mat dist;
-    distanceTransform(bw, dist, CV_DIST_L2, 3);
-    // Normalize the distance image for range = {0.0, 1.0}
-    // so we can visualize and threshold it
-    normalize(dist, dist, 0, 1., NORM_MINMAX);
-    imshow("Distance Transform Image", dist);
-    // Threshold to obtain the peaks
-    // This will be the markers for the foreground objects
-    threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
-    // Dilate a bit the dist image
-    Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
-    dilate(dist, dist, kernel1);
-    imshow("Peaks", dist);
-    // Create the CV_8U version of the distance image
-    // It is needed for findContours()
-    Mat dist_8u;
-    dist.convertTo(dist_8u, CV_8U);
-    // Find total markers
-    vector<vector<Point> > contours;
-    findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-    // Create the marker image for the watershed algorithm
-    Mat markers = Mat::zeros(dist.size(), CV_32SC1);
-    // Draw the foreground markers
-    for (size_t i = 0; i < contours.size(); i++)
-        drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
-    // Draw the background marker
-    circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
-    imshow("Markers", markers*10000);
-    // Perform the watershed algorithm
-    watershed(src, markers);
-    Mat mark = Mat::zeros(markers.size(), CV_8UC1);
-    markers.convertTo(mark, CV_8UC1);
-    bitwise_not(mark, mark);
-//    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
-                                  // image looks like at that point
-    // Generate random colors
-    vector<Vec3b> colors;
-    for (size_t i = 0; i < contours.size(); i++)
-    {
-        int b = theRNG().uniform(0, 255);
-        int g = theRNG().uniform(0, 255);
-        int r = theRNG().uniform(0, 255);
-        colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
-    }
-    // Create the result image
-    Mat dst = Mat::zeros(markers.size(), CV_8UC3);
-    // Fill labeled objects with random colors
-    for (int i = 0; i < markers.rows; i++)
-    {
-        for (int j = 0; j < markers.cols; j++)
-        {
-            int index = markers.at<int>(i,j);
-            if (index > 0 && index <= static_cast<int>(contours.size()))
-                dst.at<Vec3b>(i,j) = colors[index-1];
-            else
-                dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
-        }
-    }
-    // Visualize the final image
-    imshow("Final Result", dst);
+	for (auto src : input_imgs) {
+		for (int x = 0; x < src.rows; x++) {
+			for (int y = 0; y < src.cols; y++) {
+				if (src.at<Vec3b>(x, y) ==
+				    Vec3b(255, 255, 255)) {
+					src.at<Vec3b>(x, y)[0] = 0;
+					src.at<Vec3b>(x, y)[1] = 0;
+					src.at<Vec3b>(x, y)[2] = 0;
+				}
+			}
+		}
+		// colorchanging(src);
+		// Show output image
+		imshow("Black Background Image", src);
+		// Create a kernel that we will use for accuting/sharpening our
+		// image
+		Mat kernel = (Mat_<float>(3, 3) << 1, 1, 1, 1, -8, 1, 1, 1,
+			      1);  // an approximation of second derivative, a
+				   // quite strong kernel
+		// do the laplacian filtering as it is
+		// well, we need to convert everything in something more deeper
+		// then CV_8U
+		// because the kernel has some negative values,
+		// and we can expect in general to have a Laplacian image with
+		// negative values
+		// BUT a 8bits unsigned int (the one we are working with) can
+		// contain values from 0 to 255
+		// so the possible negative number will be truncated
+		Mat imgLaplacian;
+		Mat sharp = src;  // copy source image to another temporary one
+		filter2D(sharp, imgLaplacian, CV_32F, kernel);
+		src.convertTo(sharp, CV_32F);
+		Mat imgResult = sharp - imgLaplacian;
+		// convert back to 8bits gray scale
+		imgResult.convertTo(imgResult, CV_8UC3);
+		imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
+		// imshow( "Laplace Filtered Image", imgLaplacian );
+		imshow("New Sharped Image", imgResult);
+		// Create binary image from source image
+		Mat bw;
+		cvtColor(src, bw, CV_BGR2GRAY);
+		threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+		imshow("Binary Image", bw);
+		// Perform the distance transform algorithm
+		Mat dist;
+		distanceTransform(bw, dist, CV_DIST_L2, 3);
+		// Normalize the distance image for range = {0.0, 1.0}
+		// so we can visualize and threshold it
+		normalize(dist, dist, 0, 1., NORM_MINMAX);
+		imshow("Distance Transform Image", dist);
+		// Threshold to obtain the peaks
+		// This will be the markers for the foreground objects
+		threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
+		// Dilate a bit the dist image
+		Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
+		dilate(dist, dist, kernel1);
+		imshow("Peaks", dist);
+		// Create the CV_8U version of the distance image
+		// It is needed for findContours()
+		Mat dist_8u;
+		dist.convertTo(dist_8u, CV_8U);
+		// Find total markers
+		vector<vector<Point>> contours;
+		findContours(dist_8u, contours, CV_RETR_EXTERNAL,
+			     CV_CHAIN_APPROX_SIMPLE);
+		// Create the marker image for the watershed algorithm
+		Mat markers = Mat::zeros(dist.size(), CV_32SC1);
+		// Draw the foreground markers
+		for (size_t i = 0; i < contours.size(); i++)
+			drawContours(markers, contours, static_cast<int>(i),
+				     Scalar::all(static_cast<int>(i) + 1), -1);
+		// Draw the background marker
+		circle(markers, Point(5, 5), 3, CV_RGB(255, 255, 255), -1);
+		imshow("Markers", markers * 10000);
+		// Perform the watershed algorithm
+		watershed(src, markers);
+		Mat mark = Mat::zeros(markers.size(), CV_8UC1);
+		markers.convertTo(mark, CV_8UC1);
+		bitwise_not(mark, mark);
+		//    imshow("Markers_v2", mark); // uncomment this if you want
+		//    to see how the mark
+		// image looks like at that point
+		// Generate random colors
+		vector<Vec3b> colors;
+		for (size_t i = 0; i < contours.size(); i++) {
+			int b = theRNG().uniform(0, 255);
+			int g = theRNG().uniform(0, 255);
+			int r = theRNG().uniform(0, 255);
+			colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+		}
+		// Create the result image
+		Mat dst = Mat::zeros(markers.size(), CV_8UC3);
+		// Fill labeled objects with random colors
+		for (int i = 0; i < markers.rows; i++) {
+			for (int j = 0; j < markers.cols; j++) {
+				int index = markers.at<int>(i, j);
+				if (index > 0 &&
+				    index <= static_cast<int>(contours.size()))
+					dst.at<Vec3b>(i, j) = colors[index - 1];
+				else
+					dst.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
+			}
+		}
+		// Visualize the final image
+		imshow("Final Result", dst);
 	}
-} 
-
+}
 
 int main(int, char** argv) {
-	
-	//Mat src = imread(argv[1]);
+	// Mat src = imread(argv[1]);
 	Mat front1 = imread(argv[1]);
-/*	if (!front1.data) {
-		std::cout << "First err!";
-		exit(-1);
-	}*/
+	/*	if (!front1.data) {
+			std::cout << "First err!";
+			exit(-1);
+		}*/
 	Mat front2 = imread(argv[2]);
-	//Mat front3 = imread(argv[3]);
+	// Mat front3 = imread(argv[3]);
 	float scale = atof(argv[3]);
-	 Mat front4 = imread("../example.png");
+	Mat front4 = imread("../example.png");
 	vector<PosedImgs> sources = {};
-	 PosedImgs mat1(front4, xOrient);
+	PosedImgs mat1(front4, xOrient);
 	// sources.push_back(mat1);
-        int tmp1 = front1.rows/2;
-        int tmp2 = front2.rows/2;
-        vector<Mat> tMat = {};
+	int tmp1 = front1.rows / 2;
+	int tmp2 = front2.rows / 2;
+	vector<Mat> tMat = {};
 	tMat.push_back(front4);
-//	devider(tMat);
- //       std::cout << "sizes: " << front1.rows << " " << front2.cols << std::endl;
-/*	PosedImgs mat0(front1, xOrient, tmp1,  0, 0, scale);// 500, 0, 0);
-	PosedImgs mat2(front2, yOrient, 0, tmp2, 0, scale); //-1200, 1700, 0);
-	sources.push_back(mat0);
-	sources.push_back(mat2);
-*/
+	//	devider(tMat);
+	//       std::cout << "sizes: " << front1.rows << " " << front2.cols <<
+	//       std::endl;
+	/*	PosedImgs mat0(front1, xOrient, tmp1,  0, 0, scale);// 500, 0,
+	   0);
+		PosedImgs mat2(front2, yOrient, 0, tmp2, 0, scale); //-1200,
+	   1700, 0);
+		sources.push_back(mat0);
+		sources.push_back(mat2);
+	*/
 	sources.push_back(mat1);
 	combineImgs(sources);
 	std::cout << "Im in the end of main" << std::endl;
