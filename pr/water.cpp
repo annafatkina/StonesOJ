@@ -765,20 +765,23 @@ Mat colorchanging(Mat gray, Mat real_conts) {
 	gray.convertTo(mask, real_conts.type());
 	Mat mask2 = real_conts.clone();
 	cvtColor(mask2, mask2, CV_BGR2GRAY);
-	bitwise_not(mask2, mask2);
+	//bitwise_not(mask2, mask2);
 	mask.copyTo(gray, mask2);
-	imshow("Red Result", gray);
-	return gray;
+	Mat res = Mat::zeros(gray.size(), CV_32FC3);
+	res.setTo(Scalar(0, 0, 255), mask);
+	res.setTo(Scalar(0, 0, 0), mask2);
+	imshow("Red Result", res);
+	return res;
 }
 
-void img_cutter(Mat input_mat) {  //, vector<Mat> &output_vec) {
+Mat img_cutter(Mat input_mat) {  //, vector<Mat> &output_vec) {
 	vector<vector<Point>> contours = extractContFromImg(input_mat);
 	Mat markers = Mat::zeros(input_mat.size(), CV_32SC1);
 	int conts_size = contours.size();
 
-	for (int i = 0; i < conts_size; i++) {
-		drawContours(markers, contours, static_cast<int>(i),
-			     Scalar::all(static_cast<int>(i) + 1), -1);
+	//for (int i = 0; i < conts_size; i++) {
+		drawContours(markers, contours, static_cast<int>(0),
+			     Scalar::all(static_cast<int>(0) + 1), -1);
 	//	imshow("cutter beforeooooo", markers);
 	//	markers *= 100;
 		markers = colorchanging(markers, input_mat);
@@ -787,29 +790,34 @@ void img_cutter(Mat input_mat) {  //, vector<Mat> &output_vec) {
 		imshow("cutter before", markers);
 		//std::cout << "mat " << std::endl << markers << std::endl; 
 		//markers /= 180;
-		markers.convertTo(markers, CV_32F);
-		markers /=1000.0;
-		imshow("cutter after", markers);
+	//	markers.convertTo(markers, CV_32F);
+	//	markers /=1000.0;
+	//	imshow("cutter after", markers);
 		
 		//std::cout << "mat " << std::endl << markers << std::endl; 
-		cvtColor(markers, m2, CV_GRAY2BGR, 3);
+	//	cvtColor(markers, m2, CV_GRAY2BGR, 3);
 		std::cout << "mark type = " << markers.type()
 			  << " m2 type = " << m2.type();
 
-		std::cout << "mat " << std::endl << m2 << std::endl; 
+		//m2.setTo (Scalar(255, 0, 0), markers);
+	//	std::cout << "mat " << std::endl << m2 << std::endl; 
+		m2 = markers;
 		if (!m2.data) {
 			std::cout << "Nodata";
 		}
 		vector<vector<Point>> new_contours = extractContFromImg(m2);
 		conts_size = contours.size();
 
-		for (int i = 0; i < conts_size; i++) {
+		/*for (int i = 0; i < conts_size; i++) {
 			drawContours(m2, new_contours, static_cast<int>(i),
 				     Scalar::all(static_cast<int>(i) + 1), -1);
-		}
+		}*/
+	std::cout << " src.cont.size = " << conts_size;	
 		imshow("cutter", m2);
-		std::cout << "cont szi " << conts_size;
-	}
+	//}
+	Mat res;
+	m2.convertTo(res, CV_8U);
+	return res;
 }
 
 void combineImgs(vector<PosedImgs> imgs) {
@@ -818,8 +826,11 @@ void combineImgs(vector<PosedImgs> imgs) {
 	    make_shared<vector<Stone3d<double>>>();
 	for (int k = 0; k < imgscount; k++) {
 		Mat src(imgs[k].getMat());
-		img_cutter(src);
-/*		vector<vector<Point>> contours = extractContFromImg(src);
+		std::cout << "combine type = " << src.type() << " " ;
+		src = img_cutter(src);
+		
+		vector<vector<Point>> contours = extractContFromImg(src);
+		std::cout << "combine cont size = " << contours.size() << " ";  
 		Mat markers = Mat::zeros(src.size(), CV_32SC1);
 		Mat squares = Mat::zeros(contours.size(), 1, CV_64F);
 		Mat markers_tmp;
@@ -861,8 +872,8 @@ void combineImgs(vector<PosedImgs> imgs) {
 			important.contour = contours[i];
 			addToStones(important, stone3dVecPtr, r);
 		}
-*/	}
-/*	vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
+	}
+	vector<Stone3d<double>>& stone3dVec = *stone3dVecPtr;
 	int st3dsize = stone3dVec.size();
 	for (int st = 0; st < st3dsize; st++) {
 		stone3dVec[st].makeDense(5);
@@ -870,8 +881,7 @@ void combineImgs(vector<PosedImgs> imgs) {
 	for (int st = 0; st < st3dsize; st++) {
 		stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
 	}
-*/ std::cout
-    << "Im finished!" << std::endl;
+	std::cout << "Im finished!" << std::endl;
 }
 
 void devider(vector<Mat> input_imgs) {
@@ -955,7 +965,7 @@ void devider(vector<Mat> input_imgs) {
 		markers.convertTo(mark, CV_8UC1);
 		bitwise_not(mark, mark);
 		//    imshow("Markers_v2", mark); // uncomment this if you want
-		//    to see how the mark
+	//    to see how the mark
 		// image looks like at that point
 		// Generate random colors
 		vector<Vec3b> colors;
@@ -1001,7 +1011,7 @@ int main(int, char** argv) {
 	int tmp2 = front2.rows / 2;
 	vector<Mat> tMat = {};
 	tMat.push_back(front4);
-	//	devider(tMat);
+//		devider(tMat);
 	//       std::cout << "sizes: " << front1.rows << " " << front2.cols <<
 	//       std::endl;
 	/*	PosedImgs mat0(front1, xOrient, tmp1,  0, 0, scale);// 500, 0,
