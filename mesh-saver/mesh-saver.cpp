@@ -12,12 +12,18 @@
 #include <CGAL/property_map.h>
 #include <CGAL/IO/read_xyz_points.h>
 
+#include <CGAL/bounding_box.h>
+#include <CGAL/Polygon_mesh_processing/internal/clip.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+
 #include <utility> // defines std::pair
 #include <list>
 #include <fstream>
 #include <vector>
 #include <string>
 
+namespace params = CGAL::Polygon_mesh_processing::parameters;
 using namespace std;
 
 // Types
@@ -39,7 +45,7 @@ typedef OpenMesh::PolyMesh_ArrayKernelT</* MyTraits*/> Surface_mesh;
 
 
 int main(int argc, char* argv[]) {
-    
+    bool isReversed = false;
     string output_filename, input_filename;
     for (int i = 0; i < argc; i++) {
 
@@ -50,6 +56,9 @@ int main(int argc, char* argv[]) {
 	if (argv[i][0] == '-' && argv[i][1] == 'o') {
 	    output_filename = argv[i+1];
 	}
+        if (argv[i][0] == '-' && argv[i][1] == 'r') {
+          isReversed = true;
+        }
 
     }
 
@@ -64,6 +73,13 @@ int main(int argc, char* argv[]) {
       std::cerr << "Error: cannot read file " <<  std::endl;
         return EXIT_FAILURE;
     }
+    std::vector<Point> points_vector;
+    for (auto const& i: points) {
+      Point tempPoint = i.first;
+      points_vector.push_back(tempPoint);
+    }
+    auto bbox = CGAL::bounding_box(points_vector.begin(), points_vector.end());
+
     // Estimates normals direction.
     // Note: pca_estimate_normals() requires an iterator over points
     // as well as property maps to access each point's position and normal.
@@ -94,8 +110,18 @@ int main(int argc, char* argv[]) {
          CGAL::Second_of_pair_property_map<PointVectorPair>(),
          output_mesh, average_spacing))
       {
-	  //output_mesh.inside_out();
-	  Surface_mesh mesh_out;
+	  if (isReversed) {
+          	output_mesh.inside_out();
+                std::cout<<"Reverse applied"<<std::endl;
+          }
+          
+          Polyhedron cuboid;
+          cuboid.make_tetrahedron(bbox.vertex(0), bbox.vertex(1), bbox.vertex(2), bbox.vertex(3));
+	  CGAL::Polygon_mesh_processing::clip(output_mesh, cuboid, false,
+          params::face_index_map(get(CGAL::face_external_index, output_mesh)).vertex_index_map(get(CGAL::vertex_external_index, output_mesh)),
+          params::face_index_map(get(CGAL::face_external_index, cuboid)));
+          
+          Surface_mesh mesh_out;
           CGAL::copy_face_graph(output_mesh, mesh_out);
 
 	  if (!OpenMesh::IO::write_mesh(mesh_out, output_filename))
