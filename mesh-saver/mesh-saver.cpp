@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 	  
           //Computes the intersection
 	  Polyhedron output_final;
-          CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(output_mesh, cuboid, output_final
+          CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(output_mesh, cuboid, output_final,
           params::face_index_map(get(CGAL::face_external_index, output_mesh)).vertex_index_map(get(CGAL::vertex_external_index, output_mesh)),
           params::face_index_map(get(CGAL::face_external_index, cuboid)));
           
