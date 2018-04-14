@@ -73,6 +73,8 @@ int main(int argc, char* argv[]) {
       std::cerr << "Error: cannot read file " <<  std::endl;
         return EXIT_FAILURE;
     }
+
+    //Computes bounding box
     std::vector<Point> points_vector;
     for (auto const& i: points) {
       Point tempPoint = i.first;
@@ -80,6 +82,7 @@ int main(int argc, char* argv[]) {
     }
     cout << points_vector.size() << endl;
     auto bbox = CGAL::bounding_box(points_vector.begin(), points_vector.end());
+
     // Estimates normals direction.
     // Note: pca_estimate_normals() requires an iterator over points
     // as well as property maps to access each point's position and normal.
@@ -115,22 +118,25 @@ int main(int argc, char* argv[]) {
                 std::cout<<"Reverse applied"<<std::endl;
           }
           
+          //Converts bounding box (K_Iso_Cuboid_3) to Polyhedron
           Polyhedron cuboid;
           cuboid.make_tetrahedron(bbox.vertex(0), bbox.vertex(1), bbox.vertex(2), bbox.vertex(3));
 	  
-
+          //Computes the intersection
 	  Polyhedron output_final;
-          //CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(output_mesh, cuboid, output_final
-          //params::face_index_map(get(CGAL::face_external_index, output_mesh)).vertex_index_map(get(CGAL::vertex_external_index, output_mesh)),
-          //params::face_index_map(get(CGAL::face_external_index, cuboid)));
+          CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(output_mesh, cuboid, output_final
+          params::face_index_map(get(CGAL::face_external_index, output_mesh)).vertex_index_map(get(CGAL::vertex_external_index, output_mesh)),
+          params::face_index_map(get(CGAL::face_external_index, cuboid)));
           
+          //Saves polyhedrons in case we need them in future (optional)
 	  std::ofstream output_landscape("landscape.off");
           output_landscape << output_mesh;
           std::ofstream output_bbox("bbox.off");
           output_bbox << cuboid;
-
+          
+          //Writing to obj file
           Surface_mesh mesh_out;
-          CGAL::copy_face_graph(output_mesh, mesh_out);
+          CGAL::copy_face_graph(output_final, mesh_out);
 
 	  if (!OpenMesh::IO::write_mesh(mesh_out, output_filename))
 	  {
