@@ -226,6 +226,7 @@ struct Stone3d {
 		for (int i = 0; i < n; i++) {
 			int nn = stoneContours[i].size();
 			for (int ii = 0; ii < nn; ii++) {
+				if (ii ==0 || !(stoneContours[i][ii].x == stoneContours[i][ii-1].x && stoneContours[i][ii].y == stoneContours[i][ii-1].y && stoneContours[i][ii].z == stoneContours[i][ii-1].z) )
 				ofof << stoneContours[i][ii].x << " "
 				     << stoneContours[i][ii].y << " "
 				     << stoneContours[i][ii].z << std::endl;
