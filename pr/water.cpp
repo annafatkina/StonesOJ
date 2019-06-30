@@ -613,11 +613,11 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	src = imgResult;  // copy back
 	// Create binary image from source image
 	Mat bw;
-	cvtColor(src, bw, CV_BGR2GRAY);
-	threshold(bw, bw, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+	cvtColor(src, bw, COLOR_BGR2GRAY);
+	threshold(bw, bw, 40, 255, THRESH_BINARY | THRESH_OTSU);
 	// Perform the distance transform algorithm
 	Mat dist = bw;
-	distanceTransform(bw, dist, CV_DIST_L2, 3);
+	distanceTransform(bw, dist, DIST_L2, 3);
 
 	// Normalize the distance image for range = {0.0, 1.0}
 	// so we can visualize and threshold it
@@ -626,7 +626,7 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	// This will be the markers for the foreground objects
 
 	// Mat dist = src;
-	threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
+	threshold(dist, dist, .4, 1., THRESH_BINARY);
 	// Dilate a bit the dist image
 	Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
 	dilate(dist, dist, kernel1);
@@ -638,8 +638,8 @@ vector<vector<Point>> extractContFromImg(Mat src) {
 	// Find total markers
 	vector<vector<Point>> contours;
 	vector<Vec4i> hierarchy;
-	findContours(dist_8u, contours, hierarchy, CV_RETR_EXTERNAL,
-		     CV_CHAIN_APPROX_SIMPLE);
+	findContours(dist_8u, contours, hierarchy, RETR_EXTERNAL,
+		     CHAIN_APPROX_SIMPLE);
 	return contours;
 }
 
@@ -808,6 +808,6 @@ int main(int argn, char** argv) {
 	}
 
 	combineImgs(sources);
-	waitKey(0);
+	//waitKey(0);
 	return 0;
 }
