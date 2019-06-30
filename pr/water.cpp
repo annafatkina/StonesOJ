@@ -772,96 +772,40 @@ void combineImgs(vector<PosedImgs> imgs) {
 		stone3dVec[st].makeDense(5);
 	}
 	for (int st = 0; st < st3dsize; st++) {
-		stone3dVec[st].toFile("ooooooout" + to_string(st) + ".xyz");
+		stone3dVec[st].toFile("output" + to_string(st) + ".xyz");
 	}
 	std::cout << "Im finished!" << std::endl;
 }
 
-void devider(vector<Mat> input_imgs) {
-	for(auto img : input_imgs) {
-	//	watershed(img, markers);
-	//	Mat mark = Mat::zeros(markers.size(), CV_8UC1);
-    	//	markers.convertTo(mark, CV_8UC1);
-    //		bitwise_not(mark, mark);
-    //		imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
-    // image looks like at that point
-    // Generate random colors
-    //		vector<Vec3b> colors;
-    //		for (size_t i = 0; i < contours.size(); i++) {
-    //			int b = theRNG().uniform(0, 255);
-    //			int g = theRNG().uniform(0, 255);
-  	//	 	int r = theRNG().uniform(0, 255);
-    	//		colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
-    	//	}
-    // Create the result image
-    	//	Mat dst = Mat::zeros(markers.size(), CV_8UC3);
-    // Fill labeled objects with random colors
-    //std::cout << "markers rows = " << markers.rows << std::endl << "markers cols = " << markers.cols <<std::endl;
-    //std::cout << colors.size();
-    //    Mat squares = Mat::zeros(colors.size(), 1, CV_64F); // for squares in points
-    //  std::cout << "squares = " << squares << std::endl;
-    		int ttt = 0;
-    		for (int i = 0; i < markers.rows; i++) {
-    			for (int j = 0; j < markers.cols; j++) {
-    				int index = markers.at<int>(i,j);
-    				if (index > 0 && index <= static_cast<int>(contours.size())) {
-    					dst.at<Vec3b>(i,j) = colors[index-1];
-    //squares.at<double>(index-1) += 1.0;
-    					ttt +=1;
-   				}
-    				else {
-    				dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
-    //squares.at<int>(0) += 1;
-    				ttt +=1;
-   				 }
-    			}
-    		}
-    		std::cout << "ttt = " << ttt << std::endl;
-		int tm=0;
-    		imshow("Final Result", dst);
-    		src = dst;
-    		for( int i = 0; i< contours.size(); i=hierarchy[i][0] ) { // iterate through each contour.
-    			Rect r= boundingRect(contours[i]);
-    //std::cout << contours[i] << std::endl;
-    			std::cout << "hierarchy " << hierarchy[i][0] << " " << hierarchy[i][1] << " " << hierarchy[i][2] << " " << hierarchy[i][3] << std::endl;
-    			if(hierarchy[i][2]<0) //Check if there is a child contour
-    				rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,0,255),2,8,0); //Opened contour
-    			else
-    				rectangle(src,Point(r.x-10,r.y-10), Point(r.x+r.width+10,r.y+r.height+10), Scalar(0,255,0),2,8,0); //closed contour
-    		}
-    		//imshow("Final final Result", src);		
-	}
-} 
 
-
-int main(int, char** argv) {
-	
-	//Mat src = imread(argv[1]);
-	Mat front1 = imread(argv[1]);
-/*	if (!front1.data) {
-		std::cout << "First err!";
+int main(int argn, char** argv) {
+        std::cout << "argn = " << argn << std::endl;
+	if (argn!=4 && argn != 5) {
+		std::cerr << "Wrong number of inputs. You should call it in format:" 
+			<< std::endl << "./point_cloud_stone <image 1> <image 2> <scale> \n or "
+			<< std::endl << "./point_cloud_stone <image 1> <image 2> <image 3> <scale> " << std::endl <<std::endl;
 		exit(-1);
-	}*/
+	}
+		
+	Mat front1 = imread(argv[1]);
 	Mat front2 = imread(argv[2]);
-	//Mat front3 = imread(argv[3]);
 	float scale = atof(argv[3]);
-	// Mat front4 = imread("../im4.png");
 	vector<PosedImgs> sources = {};
-	// PosedImgs mat1(src, xOrient);
-	// sources.push_back(mat1);
         int tmp1 = front1.rows/2;
         int tmp2 = front2.rows/2;
         std::cout << "sizes: " << front1.rows << " " << front2.cols << std::endl;
 	PosedImgs mat0(front1, xOrient, tmp1,  0, 0, scale);// 500, 0, 0);
-	// PosedImgs mat1(front4, xOrient);
 	PosedImgs mat2(front2, yOrient, 0, tmp2, 0, scale); //-1200, 1700, 0);
-	//PosedImgs mat3(front3, yOrient, 0, 550, 0, 0.3);
 	sources.push_back(mat0);
-	// sources.push_back(mat1);
 	sources.push_back(mat2);
-	//sources.push_back(mat3);
+
+	if (argn == 3) {
+		Mat front3 = imread(argv[3]);
+		PosedImgs mat3(front3, yOrient, 0, front3.rows / 2, 0, scale);
+		sources.push_back(mat3);
+	}
+
 	combineImgs(sources);
-	std::cout << "Im in the end of main" << std::endl;
 	waitKey(0);
 	return 0;
 }
